@@ -7,7 +7,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/hieunmce/example-go/domain"
+	"PRACTICESTUFF/example-go/domain"
 )
 
 var (

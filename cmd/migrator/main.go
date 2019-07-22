@@ -6,11 +6,13 @@ import (
 	"log"
 	"os"
 
+	"github.com/k0kubun/pp"
+
 	"github.com/pressly/goose"
 
 	// Init DB drivers.
-	"github.com/hieunmce/example-go/cmd/migrator/config"
-	dbconn "github.com/hieunmce/example-go/cmd/migrator/db"
+	"PRACTICESTUFF/example-go/cmd/migrator/config"
+	dbconn "PRACTICESTUFF/example-go/cmd/migrator/db"
 )
 
 var (
@@ -46,6 +48,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("can't read config by error: %v", err)
 	}
+
+	pp.Println(cfg)
 
 	db, err := dbconn.NewConnection(cfg)
 	if err != nil {

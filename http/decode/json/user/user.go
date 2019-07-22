@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-chi/chi"
 
-	"github.com/hieunmce/example-go/domain"
-	userEndpoint "github.com/hieunmce/example-go/endpoints/user"
+	"PRACTICESTUFF/example-go/domain"
+	userEndpoint "PRACTICESTUFF/example-go/endpoints/user"
 )
 
 // FindRequest .
@@ -22,7 +22,12 @@ func FindRequest(_ context.Context, r *http.Request) (interface{}, error) {
 
 // FindAllRequest .
 func FindAllRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	return userEndpoint.FindAllRequest{}, nil
+
+	nameQueryString := r.URL.Query().Get("name")
+
+	return userEndpoint.FindAllRequest{
+		Name: nameQueryString,
+	}, nil
 }
 
 // CreateRequest .

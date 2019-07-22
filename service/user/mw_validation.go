@@ -4,7 +4,7 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/hieunmce/example-go/domain"
+	"PRACTICESTUFF/example-go/domain"
 )
 
 // Declare Regex
@@ -41,8 +41,8 @@ func (mw validationMiddleware) Create(ctx context.Context, user *domain.User) (e
 
 	return mw.Service.Create(ctx, user)
 }
-func (mw validationMiddleware) FindAll(ctx context.Context) ([]domain.User, error) {
-	return mw.Service.FindAll(ctx)
+func (mw validationMiddleware) FindAll(ctx context.Context, nameToFind string) ([]domain.User, error) {
+	return mw.Service.FindAll(ctx, nameToFind)
 }
 func (mw validationMiddleware) Find(ctx context.Context, user *domain.User) (*domain.User, error) {
 	return mw.Service.Find(ctx, user)
