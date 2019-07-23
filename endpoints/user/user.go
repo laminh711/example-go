@@ -89,12 +89,8 @@ type FindAllResponse struct {
 // MakeFindAllEndpoint make endpoint for find all User
 func MakeFindAllEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		_ = request.(FindAllRequest)
-
 		req := request.(FindAllRequest)
-
 		nameToFind := req.Name
-
 		users, err := s.UserService.FindAll(ctx, nameToFind)
 		if err != nil {
 			return nil, err
