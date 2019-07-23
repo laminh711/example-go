@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-kit/kit/endpoint"
 
-	"github.com/hieunmce/example-go/domain"
-	"github.com/hieunmce/example-go/service"
+	"PRACTICESTUFF/example-go/domain"
+	"PRACTICESTUFF/example-go/service"
 )
 
 // CreateData data for CreateUser
@@ -77,18 +77,25 @@ func MakeFindEndPoint(s service.Service) endpoint.Endpoint {
 }
 
 // FindAllRequest request struct for FindAll User
-type FindAllRequest struct{}
+type FindAllRequest struct {
+	Name string
+}
 
 // FindAllResponse request struct for find all User
 type FindAllResponse struct {
-	Users []domain.User `json:"users"`
+	Users []domain.User `json:"user"`
 }
 
 // MakeFindAllEndpoint make endpoint for find all User
 func MakeFindAllEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		_ = request.(FindAllRequest)
-		users, err := s.UserService.FindAll(ctx)
+
+		req := request.(FindAllRequest)
+
+		nameToFind := req.Name
+
+		users, err := s.UserService.FindAll(ctx, nameToFind)
 		if err != nil {
 			return nil, err
 		}
