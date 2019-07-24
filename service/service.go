@@ -1,6 +1,7 @@
 package service
 
 import (
+	"PRACTICESTUFF/example-go/service/book"
 	"PRACTICESTUFF/example-go/service/category"
 	"PRACTICESTUFF/example-go/service/user"
 )
@@ -9,4 +10,5 @@ import (
 type Service struct {
 	UserService     user.Service
 	CategoryService category.Service
+	BookService     book.Service
 }
