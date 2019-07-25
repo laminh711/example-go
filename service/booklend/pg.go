@@ -53,7 +53,8 @@ func (s *pgService) IsBookExisted(_ context.Context, p *domain.Book) (bool, erro
 // IsBookAvailable implement IsBookAvailable for Booklend service
 func (s *pgService) IsBooklendable(ctx context.Context, p *domain.Booklend) (bool, error) {
 	var res = domain.Booklend{}
-	temp := s.db.Where("(booklends.from <= ? AND ? <= booklends.to) OR (booklends.from <= ? AND ? <= booklends.to)", p.From, p.From, p.To, p.To).Find(&res)
+	s.db.LogMode(true)
+	temp := s.db.Where("(booklends.book_id = ?) AND ((booklends.from <= ? AND ? <= booklends.to) OR (booklends.from <= ? AND ? <= booklends.to))", p.BookID, p.From, p.From, p.To, p.To).Find(&res)
 	err := temp.Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {

@@ -19,6 +19,10 @@ func (errInvalidTimeSpan) Error() string {
 	return `'from' must be sooner than 'to'`
 }
 
+func (errInvalidTimeSpan) StatusCode() int {
+	return http.StatusBadRequest
+}
+
 type errNotFound struct{}
 
 func (errNotFound) Error() string {
@@ -45,16 +49,28 @@ func (errUserNotFound) Error() string {
 	return "invalid user id"
 }
 
+func (errUserNotFound) StatusCode() int {
+	return http.StatusBadRequest
+}
+
 type errBookNotFound struct{}
 
 func (errBookNotFound) Error() string {
 	return "invalid book id"
 }
 
+func (errBookNotFound) StatusCode() int {
+	return http.StatusBadRequest
+}
+
 type errBookNotAvailable struct{}
 
 func (errBookNotAvailable) Error() string {
 	return "book not available"
+}
+
+func (errBookNotAvailable) StatusCode() int {
+	return http.StatusConflict
 }
 
 type errRecordNotFound struct{}
