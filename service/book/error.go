@@ -20,16 +20,28 @@ func (errDescriptionIsRequired) Error() string {
 	return "book description is required"
 }
 
+func (errDescriptionIsRequired) StatusCode() int {
+	return http.StatusBadRequest
+}
+
 type errDescriptionIsTooShort struct{}
 
 func (errDescriptionIsTooShort) Error() string {
 	return "book description must be at least 5 characters long"
 }
 
+func (errDescriptionIsTooShort) StatusCode() int {
+	return http.StatusBadRequest
+}
+
 type errCategoryNotExisted struct{}
 
 func (errCategoryNotExisted) Error() string {
 	return "invalid category id"
+}
+
+func (errCategoryNotExisted) StatusCode() int {
+	return http.StatusBadRequest
 }
 
 type errNotFound struct{}
