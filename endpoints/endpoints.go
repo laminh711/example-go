@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"PRACTICESTUFF/example-go/endpoints/book"
+	"PRACTICESTUFF/example-go/endpoints/booklend"
 	"PRACTICESTUFF/example-go/service"
 
 	"github.com/go-kit/kit/endpoint"
@@ -28,6 +29,8 @@ type Endpoints struct {
 	FindAllBook endpoint.Endpoint
 	UpdateBook  endpoint.Endpoint
 	DeleteBook  endpoint.Endpoint
+
+	CreateBooklend endpoint.Endpoint
 }
 
 // MakeServerEndpoints returns an Endpoints struct
@@ -50,5 +53,7 @@ func MakeServerEndpoints(s service.Service) Endpoints {
 		FindAllBook: book.MakeFindAllEndpoint(s),
 		UpdateBook:  book.MakeUpdateEndpoint(s),
 		DeleteBook:  book.MakeDeleteEndpoint(s),
+
+		CreateBooklend: booklend.MakeCreateEndpoint(s),
 	}
 }
