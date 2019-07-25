@@ -53,5 +53,7 @@ func (c PGConnector) InitModel(cfg *config.Config) error {
 
 	return db.AutoMigrate(
 		&domain.User{},
+		&domain.Category{},
+		&domain.Book{},
 	).Error
 }
