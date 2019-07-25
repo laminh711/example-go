@@ -11,6 +11,7 @@ import (
 
 	"PRACTICESTUFF/example-go/endpoints"
 	bookDecode "PRACTICESTUFF/example-go/http/decode/json/book"
+	booklendDecode "PRACTICESTUFF/example-go/http/decode/json/booklend"
 	categoryDecode "PRACTICESTUFF/example-go/http/decode/json/category"
 	userDecode "PRACTICESTUFF/example-go/http/decode/json/user"
 )
@@ -105,6 +106,15 @@ func NewHTTPHandler(endpoints endpoints.Endpoints,
 		r.Delete("/{book_id}", httptransport.NewServer(
 			endpoints.DeleteBook,
 			bookDecode.DeleteRequest,
+			encodeResponse,
+			options...,
+		).ServeHTTP)
+	})
+
+	r.Route("/booklends", func(r chi.Router) {
+		r.Post("/", httptransport.NewServer(
+			endpoints.CreateBooklend,
+			booklendDecode.CreateRequest,
 			encodeResponse,
 			options...,
 		).ServeHTTP)
