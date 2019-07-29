@@ -55,9 +55,9 @@ func (s *pgService) Find(_ context.Context, p *domain.User) (*domain.User, error
 }
 
 // FindAll implement FindAll for User service
-func (s *pgService) FindAll(_ context.Context, nameToFind string) ([]domain.User, error) {
+func (s *pgService) FindAll(_ context.Context) ([]domain.User, error) {
 	res := []domain.User{}
-	return res, s.db.Where("name LIKE ?", "%"+nameToFind+"%").Find(&res).Error
+	return res, s.db.Find(&res).Error
 }
 
 // Delete implement Delete for User service

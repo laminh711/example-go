@@ -59,5 +59,5 @@ func DeleteRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return bookEndpoint.DeleteRequest{ID: bookID}, nil
+	return bookEndpoint.DeleteRequest{BookID: bookID}, nil
 }

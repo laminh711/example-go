@@ -77,9 +77,7 @@ func MakeFindEndPoint(s service.Service) endpoint.Endpoint {
 }
 
 // FindAllRequest request struct for FindAll User
-type FindAllRequest struct {
-	Name string
-}
+type FindAllRequest struct{}
 
 // FindAllResponse request struct for find all User
 type FindAllResponse struct {
@@ -89,9 +87,7 @@ type FindAllResponse struct {
 // MakeFindAllEndpoint make endpoint for find all User
 func MakeFindAllEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(FindAllRequest)
-		nameToFind := req.Name
-		users, err := s.UserService.FindAll(ctx, nameToFind)
+		users, err := s.UserService.FindAll(ctx)
 		if err != nil {
 			return nil, err
 		}

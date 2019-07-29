@@ -82,7 +82,7 @@ func (s *pgService) Delete(_ context.Context, p *domain.Book) error {
 }
 
 // IsCategoryExisted implement check category existence for BookService
-func (s *pgService) IsCategoryExisted(_ context.Context, cat *domain.Category) (bool, error) {
+func (s *pgService) IsCategoryExisted(ctx context.Context, cat *domain.Category) (bool, error) {
 	category := domain.Category{Model: domain.Model{ID: cat.ID}}
 	if err := s.db.Find(&category).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {

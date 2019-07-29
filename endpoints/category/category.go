@@ -74,9 +74,7 @@ func MakeFindEndpoint(s service.Service) endpoint.Endpoint {
 }
 
 // FindAllRequest request struct for FindAllCategory
-type FindAllRequest struct {
-	Name string
-}
+type FindAllRequest struct{}
 
 // FindAllResponse request struct for FindAllCategory
 type FindAllResponse struct {
@@ -86,9 +84,7 @@ type FindAllResponse struct {
 // MakeFindAllEndpoint make endpoint for FindAllCategory
 func MakeFindAllEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(FindAllRequest)
-		nameToFind := req.Name
-		categories, err := s.CategoryService.FindAll(ctx, nameToFind)
+		categories, err := s.CategoryService.FindAll(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -131,7 +127,7 @@ func MakeUpdateEndpoint(s service.Service) endpoint.Endpoint {
 
 // DeleteRequest request struct for DeteleCategory
 type DeleteRequest struct {
-	ID domain.UUID
+	CategoryID domain.UUID
 }
 
 // DeleteResponse response struct for DeleteCategory
@@ -145,7 +141,7 @@ func MakeDeleteEndpoint(s service.Service) endpoint.Endpoint {
 		req := request.(DeleteRequest)
 
 		catToDelete := domain.Category{
-			Model: domain.Model{ID: req.ID},
+			Model: domain.Model{ID: req.CategoryID},
 		}
 
 		if err := s.CategoryService.Delete(ctx, &catToDelete); err != nil {

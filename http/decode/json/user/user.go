@@ -22,12 +22,7 @@ func FindRequest(_ context.Context, r *http.Request) (interface{}, error) {
 
 // FindAllRequest .
 func FindAllRequest(_ context.Context, r *http.Request) (interface{}, error) {
-
-	nameQueryString := r.URL.Query().Get("name")
-
-	return userEndpoint.FindAllRequest{
-		Name: nameQueryString,
-	}, nil
+	return userEndpoint.FindAllRequest{}, nil
 }
 
 // CreateRequest .

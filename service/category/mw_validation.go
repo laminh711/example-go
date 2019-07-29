@@ -38,8 +38,8 @@ func (mw validationMiddleware) Create(ctx context.Context, category *domain.Cate
 
 	return mw.Service.Create(ctx, category)
 }
-func (mw validationMiddleware) FindAll(ctx context.Context, nameToFind string) ([]domain.Category, error) {
-	return mw.Service.FindAll(ctx, nameToFind)
+func (mw validationMiddleware) FindAll(ctx context.Context) ([]domain.Category, error) {
+	return mw.Service.FindAll(ctx)
 }
 func (mw validationMiddleware) Find(ctx context.Context, category *domain.Category) (*domain.Category, error) {
 	return mw.Service.Find(ctx, category)
@@ -52,6 +52,14 @@ func (mw validationMiddleware) Update(ctx context.Context, category *domain.Cate
 
 	if len(category.Name) <= 5 {
 		return nil, ErrNameIsTooShort
+	}
+
+	dup, err := mw.Service.IsNameDuplicate(ctx, category.Name)
+	if err != nil {
+		return nil, err
+	}
+	if dup {
+		return nil, ErrNameIsDuplicated
 	}
 
 	return mw.Service.Update(ctx, category)

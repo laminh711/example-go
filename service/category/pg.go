@@ -44,7 +44,7 @@ func (s *pgService) Find(_ context.Context, p *domain.Category) (*domain.Categor
 	res := p
 	if err := s.db.Find(&res).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, ErrNotFound
+			return nil, ErrRecordNotFound
 		}
 		return nil, err
 	}
@@ -53,9 +53,9 @@ func (s *pgService) Find(_ context.Context, p *domain.Category) (*domain.Categor
 }
 
 // FindAll implement FindAll for Category service
-func (s *pgService) FindAll(_ context.Context, nameToFind string) ([]domain.Category, error) {
+func (s *pgService) FindAll(_ context.Context) ([]domain.Category, error) {
 	res := []domain.Category{}
-	return res, s.db.Where("name LIKE ?", "%"+nameToFind+"%").Find(&res).Error
+	return res, s.db.Find(&res).Error
 }
 
 // Delete implement Delete for Category service
