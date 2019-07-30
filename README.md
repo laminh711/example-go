@@ -2,9 +2,9 @@
 
 **Library API excercise** is a golang implement(using go-kit, gorm) of library API
 
-Submitted by: **{{github_user_name}}**
+Submitted by: **laminh711**
 
-Time spent: **{{time_spent}}** hours spent in total
+Time spent: **48** hours spent in total
 
 ## Prerequisite
 
@@ -92,15 +92,15 @@ Time spent: **{{time_spent}}** hours spent in total
   * [x] Validation testing (unit test)
   * [x] Endpoint testing (unit test)
   * [x] Database testing (integration)
-* [ ] Add testing for CRUD category:
-  * [ ] Validation testing
-  * [ ] Database testing
-* [ ] Add testing for CRUD books:
-  * [ ] Validation testing
-  * [ ] Database testing
-* [ ] Add testing for lending books:
-  * [ ] Validation testing
-  * [ ] Database testing
+* [x] Add testing for CRUD category:
+  * [x] Validation testing
+  * [x] Database testing
+* [x] Add testing for CRUD books:
+  * [x] Validation testing
+  * [x] Database testing
+* [x] Add testing for lending books:
+  * [x] Validation testing
+  * [x] Database testing
 
 ### Optional:
 
@@ -130,7 +130,7 @@ Notes about current git.
 
 ## License
 
-    Copyright [2018] [{{github_user_name}}]
+    Copyright [2018] [laminh711]
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
