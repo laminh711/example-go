@@ -14,5 +14,5 @@ type Service interface {
 	Update(ctx context.Context, p *domain.Book) (*domain.Book, error)
 	Delete(ctx context.Context, p *domain.Book) error
 
-	IsCategoryExisted(_ context.Context, cat *domain.Category) (bool, error)
+	IsCategoryExisted(ctx context.Context, cat *domain.Category) (bool, error)
 }

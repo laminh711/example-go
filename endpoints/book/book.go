@@ -140,7 +140,7 @@ func MakeUpdateEndpoint(s service.Service) endpoint.Endpoint {
 
 // DeleteRequest request struct for DeteleBook
 type DeleteRequest struct {
-	ID domain.UUID
+	BookID domain.UUID
 }
 
 // DeleteResponse response struct for DeleteBook
@@ -152,7 +152,7 @@ type DeleteResponse struct {
 func MakeDeleteEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteRequest)
-		bookToDelete := domain.Book{Model: domain.Model{ID: req.ID}}
+		bookToDelete := domain.Book{Model: domain.Model{ID: req.BookID}}
 		if err := s.BookService.Delete(ctx, &bookToDelete); err != nil {
 			return nil, err
 		}

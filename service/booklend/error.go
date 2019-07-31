@@ -4,13 +4,13 @@ import "net/http"
 
 // Error declaration
 var (
-	ErrNotFound         = errNotFound{}
-	ErrUnknown          = errUnknown{}
-	ErrBookNotFound     = errBookNotFound{}
-	ErrBookNotAvailable = errBookNotAvailable{}
-	ErrUserNotFound     = errUserNotFound{}
-	ErrInvalidTimeSpan  = errInvalidTimeSpan{}
-	ErrRecordNotFound   = errRecordNotFound{}
+	ErrNotFound        = errNotFound{}
+	ErrUnknown         = errUnknown{}
+	ErrBookNotFound    = errBookNotFound{}
+	ErrBookNotLendable = errBookNotLendable{}
+	ErrUserNotFound    = errUserNotFound{}
+	ErrInvalidTimeSpan = errInvalidTimeSpan{}
+	ErrRecordNotFound  = errRecordNotFound{}
 )
 
 type errInvalidTimeSpan struct{}
@@ -63,13 +63,13 @@ func (errBookNotFound) StatusCode() int {
 	return http.StatusBadRequest
 }
 
-type errBookNotAvailable struct{}
+type errBookNotLendable struct{}
 
-func (errBookNotAvailable) Error() string {
-	return "book not available"
+func (errBookNotLendable) Error() string {
+	return "book not lendable"
 }
 
-func (errBookNotAvailable) StatusCode() int {
+func (errBookNotLendable) StatusCode() int {
 	return http.StatusConflict
 }
 

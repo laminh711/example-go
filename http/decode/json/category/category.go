@@ -22,8 +22,7 @@ func FindRequest(_ context.Context, r *http.Request) (interface{}, error) {
 
 // FindAllRequest decode FindAllRequest
 func FindAllRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	nameToFind := r.URL.Query().Get("name")
-	return categoryEndpoint.FindAllRequest{Name: nameToFind}, nil
+	return categoryEndpoint.FindAllRequest{}, nil
 }
 
 // CreateRequest decode CreateRequest
@@ -59,5 +58,5 @@ func DeleteRequest(_ context.Context, r *http.Request) (interface{}, error) {
 		return nil, err
 	}
 
-	return categoryEndpoint.DeleteRequest{ID: categoryID}, nil
+	return categoryEndpoint.DeleteRequest{CategoryID: categoryID}, nil
 }

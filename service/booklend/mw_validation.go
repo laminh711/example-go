@@ -38,12 +38,12 @@ func (mw validationMiddleware) Create(ctx context.Context, booklend *domain.Book
 		return ErrBookNotFound
 	}
 
-	bookAvailable, err := mw.Service.IsBooklendable(ctx, booklend)
+	bookLendable, err := mw.Service.IsBooklendable(ctx, booklend)
 	if err != nil {
 		return err
 	}
-	if !bookAvailable {
-		return ErrBookNotAvailable
+	if !bookLendable {
+		return ErrBookNotLendable
 	}
 
 	if booklend.From.After(booklend.To) {

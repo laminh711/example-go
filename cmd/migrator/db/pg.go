@@ -55,5 +55,6 @@ func (c PGConnector) InitModel(cfg *config.Config) error {
 		&domain.User{},
 		&domain.Category{},
 		&domain.Book{},
+		&domain.Booklend{},
 	).Error
 }
