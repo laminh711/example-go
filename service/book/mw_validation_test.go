@@ -351,6 +351,7 @@ func Test_validationMiddleware_FindAll(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		p   *domain.Book
+		q   FindAllQueries
 	}
 	tests := []struct {
 		name    string
@@ -365,7 +366,7 @@ func Test_validationMiddleware_FindAll(t *testing.T) {
 			mw := validationMiddleware{
 				Service: tt.fields.Service,
 			}
-			got, err := mw.FindAll(tt.args.ctx)
+			got, err := mw.FindAll(tt.args.ctx, tt.args.q)
 
 			if err != nil {
 				t.Errorf("validationMiddleware.Find() error = %v, wantErr %v", err, tt.wantErr)

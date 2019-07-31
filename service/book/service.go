@@ -6,11 +6,17 @@ import (
 	"PRACTICESTUFF/example-go/domain"
 )
 
+// FindAllQueries query struct got from FindAllRequest
+type FindAllQueries struct {
+	Name   string
+	Status string
+}
+
 // Service interface for project service
 type Service interface {
 	Create(ctx context.Context, p *domain.Book) error
 	Find(ctx context.Context, p *domain.Book) (*domain.Book, error)
-	FindAll(ctx context.Context) ([]domain.Book, error)
+	FindAll(ctx context.Context, queries FindAllQueries) ([]domain.Book, error)
 	Update(ctx context.Context, p *domain.Book) (*domain.Book, error)
 	Delete(ctx context.Context, p *domain.Book) error
 

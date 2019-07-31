@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"PRACTICESTUFF/example-go/domain"
 	bookEndpoint "PRACTICESTUFF/example-go/endpoints/book"
@@ -22,7 +23,10 @@ func FindRequest(_ context.Context, r *http.Request) (interface{}, error) {
 
 // FindAllRequest decode FindAllRequest
 func FindAllRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	return bookEndpoint.FindAllRequest{}, nil
+	r.URL.Path = strings.ToLower(r.URL.Path)
+	nameQuery := r.URL.Query().Get("name")
+	statusQuery := r.URL.Query().Get("status")
+	return bookEndpoint.FindAllRequest{Name: nameQuery, Status: statusQuery}, nil
 }
 
 // CreateRequest decode CreateRequest

@@ -1,4 +1,4 @@
-// +build integration
+// +build unit
 
 package book
 
@@ -6,10 +6,8 @@ import (
 	testutil "PRACTICESTUFF/example-go/config/database/pg/util"
 	"PRACTICESTUFF/example-go/domain"
 	"context"
-	"reflect"
 	"testing"
-
-	"github.com/jinzhu/gorm"
+	"time"
 )
 
 func TestPGService_Create(t *testing.T) {
@@ -188,32 +186,135 @@ func TestPGService_Find(t *testing.T) {
 	}
 }
 
-func TestPGService_FindAll(t *testing.T) {
-	type fields struct {
-		db *gorm.DB
+func EqualArrayResult(a []domain.Book, b []domain.Book) bool {
+	if len(a) != len(b) {
+		return false
 	}
+
+	for i := 0; i < len(a); i++ {
+		if !a[i].Equal(b[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func TestPGService_FindAll(t *testing.T) {
+	t.Parallel()
+	testDB, _, cleanup := testutil.CreateTestDatabase(t)
+	defer cleanup()
+	err := testutil.MigrateTables(testDB)
+	if err != nil {
+		t.Fatalf("Failed to migrate table by error %v", err)
+	}
+
+	book := domain.Book{
+		Name: "book something",
+	}
+	err = testDB.Create(&book).Error
+	if err != nil {
+		t.Fatalf("Failed to create book by error %v", err)
+	}
+
+	user := domain.User{}
+	err = testDB.Create(&user).Error
+	if err != nil {
+		t.Fatalf("Failed to create user by error %v", err)
+	}
+
+	borrowedBook := domain.Book{
+		Name: "book borrowed",
+	}
+	err = testDB.Create(&borrowedBook).Error
+	if err != nil {
+		t.Fatalf("Failed to create borrowedBook by error %v", err)
+	}
+
+	booklend := domain.Booklend{
+		BookID: borrowedBook.ID,
+		UserID: user.ID,
+		From:   time.Now().Local().Add(time.Hour * time.Duration(-8)),
+		To:     time.Now().Local().Add(time.Hour * time.Duration(8)),
+	}
+	err = testDB.Create(&booklend).Error
+	if err != nil {
+		t.Fatalf("Failed to create booklend by error %v", err)
+	}
+
 	type args struct {
-		in0 context.Context
+		q FindAllQueries
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
-		want    []domain.User
+		want    []domain.Book
 		wantErr bool
-	}{}
+	}{
+		{
+			name: "All, no queries",
+			args: args{},
+			want: []domain.Book{book, borrowedBook},
+		},
+		{
+			name: "All, with name query",
+			args: args{
+				q: FindAllQueries{
+					Name: "book",
+				},
+			},
+			want: []domain.Book{book, borrowedBook},
+		},
+		{
+			name: "All, with name query",
+			args: args{
+				q: FindAllQueries{
+					Name: "book somethi",
+				},
+			},
+			want: []domain.Book{book},
+		},
+		{
+			name: "All, with name query",
+			args: args{
+				q: FindAllQueries{
+					Name: "borrow",
+				},
+			},
+			want: []domain.Book{borrowedBook},
+		},
+		{
+			name: "All, with status query",
+			args: args{
+				q: FindAllQueries{
+					Status: "available",
+				},
+			},
+			want: []domain.Book{book},
+		},
+		{
+			name: "All, with status query",
+			args: args{
+				q: FindAllQueries{
+					Status: "unavailable",
+				},
+			},
+			want: []domain.Book{borrowedBook},
+		},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &pgService{
-				db: tt.fields.db,
+				db: testDB,
 			}
-			got, err := s.FindAll(tt.args.in0)
+			got, err := s.FindAll(context.Background(), tt.args.q)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("pgService.FindAll() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("pgService.FindAll() = %v, want %v", got, tt.want)
+
+			if !EqualArrayResult(got, tt.want) {
+				t.Errorf("pgService.FindAll() \ngot %v, \nwant %v", got, tt.want)
 			}
 		})
 	}

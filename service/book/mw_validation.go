@@ -48,8 +48,8 @@ func (mw validationMiddleware) Create(ctx context.Context, book *domain.Book) (e
 	return mw.Service.Create(ctx, book)
 }
 
-func (mw validationMiddleware) FindAll(ctx context.Context) ([]domain.Book, error) {
-	return mw.Service.FindAll(ctx)
+func (mw validationMiddleware) FindAll(ctx context.Context, queries FindAllQueries) ([]domain.Book, error) {
+	return mw.Service.FindAll(ctx, queries)
 }
 func (mw validationMiddleware) Find(ctx context.Context, book *domain.Book) (*domain.Book, error) {
 	return mw.Service.Find(ctx, book)

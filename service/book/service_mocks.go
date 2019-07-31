@@ -37,7 +37,7 @@ var _ Service = &ServiceMock{}
 //             FindFunc: func(ctx context.Context, p *domain.Book) (*domain.Book, error) {
 // 	               panic("mock out the Find method")
 //             },
-//             FindAllFunc: func(ctx context.Context) ([]domain.Book, error) {
+//             FindAllFunc: func(ctx context.Context, queries FindAllQueries) ([]domain.Book, error) {
 // 	               panic("mock out the FindAll method")
 //             },
 //             IsCategoryExistedFunc: func(ctx context.Context, cat *domain.Category) (bool, error) {
@@ -63,7 +63,7 @@ type ServiceMock struct {
 	FindFunc func(ctx context.Context, p *domain.Book) (*domain.Book, error)
 
 	// FindAllFunc mocks the FindAll method.
-	FindAllFunc func(ctx context.Context) ([]domain.Book, error)
+	FindAllFunc func(ctx context.Context, queries FindAllQueries) ([]domain.Book, error)
 
 	// IsCategoryExistedFunc mocks the IsCategoryExisted method.
 	IsCategoryExistedFunc func(ctx context.Context, cat *domain.Category) (bool, error)
@@ -98,6 +98,8 @@ type ServiceMock struct {
 		FindAll []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
+			// Queries is the queries argument value.
+			Queries FindAllQueries
 		}
 		// IsCategoryExisted holds details about calls to the IsCategoryExisted method.
 		IsCategoryExisted []struct {
@@ -222,29 +224,33 @@ func (mock *ServiceMock) FindCalls() []struct {
 }
 
 // FindAll calls FindAllFunc.
-func (mock *ServiceMock) FindAll(ctx context.Context) ([]domain.Book, error) {
+func (mock *ServiceMock) FindAll(ctx context.Context, queries FindAllQueries) ([]domain.Book, error) {
 	if mock.FindAllFunc == nil {
 		panic("ServiceMock.FindAllFunc: method is nil but Service.FindAll was just called")
 	}
 	callInfo := struct {
-		Ctx context.Context
+		Ctx     context.Context
+		Queries FindAllQueries
 	}{
-		Ctx: ctx,
+		Ctx:     ctx,
+		Queries: queries,
 	}
 	lockServiceMockFindAll.Lock()
 	mock.calls.FindAll = append(mock.calls.FindAll, callInfo)
 	lockServiceMockFindAll.Unlock()
-	return mock.FindAllFunc(ctx)
+	return mock.FindAllFunc(ctx, queries)
 }
 
 // FindAllCalls gets all the calls that were made to FindAll.
 // Check the length with:
 //     len(mockedService.FindAllCalls())
 func (mock *ServiceMock) FindAllCalls() []struct {
-	Ctx context.Context
+	Ctx     context.Context
+	Queries FindAllQueries
 } {
 	var calls []struct {
-		Ctx context.Context
+		Ctx     context.Context
+		Queries FindAllQueries
 	}
 	lockServiceMockFindAll.RLock()
 	calls = mock.calls.FindAll

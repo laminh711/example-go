@@ -8,6 +8,7 @@ import (
 
 	"PRACTICESTUFF/example-go/domain"
 	"PRACTICESTUFF/example-go/service"
+	bookService "PRACTICESTUFF/example-go/service/book"
 )
 
 // CreateData data for CreateBook
@@ -81,7 +82,10 @@ func MakeFindEndpoint(s service.Service) endpoint.Endpoint {
 }
 
 // FindAllRequest request struct for FindAllBook
-type FindAllRequest struct{}
+type FindAllRequest struct {
+	Name   string
+	Status string
+}
 
 // FindAllResponse request struct for FindAllBook
 type FindAllResponse struct {
@@ -91,7 +95,8 @@ type FindAllResponse struct {
 // MakeFindAllEndpoint make endpoint for FindAllBook
 func MakeFindAllEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		books, err := s.BookService.FindAll(ctx)
+		req := request.(FindAllRequest)
+		books, err := s.BookService.FindAll(ctx, bookService.FindAllQueries(req))
 		if err != nil {
 			return nil, err
 		}
