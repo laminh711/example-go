@@ -21,6 +21,12 @@ func NewPGService(db *gorm.DB) Service {
 	}
 }
 
+func pgTimeFormat(t time.Time) string {
+	return fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d.%d+00:00",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second(), t.Nanosecond()/1000)
+}
+
 // CreateBatch implement CreateBatch for BookService
 func (s *pgService) CreateBatch(ctx context.Context, p []domain.Book) error {
 
@@ -36,10 +42,7 @@ func (s *pgService) CreateBatch(ctx context.Context, p []domain.Book) error {
 		}
 	}
 
-	t := time.Now().UTC()
-	currentTimeValueOnPostgres := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d.%d+00:00",
-		t.Year(), t.Month(), t.Day(),
-		t.Hour(), t.Minute(), t.Second(), t.Nanosecond()/1000)
+	currentTimeValueOnPostgres := pgTimeFormat(time.Now().UTC())
 	returnValues := "SELECT * FROM books WHERE books.created_at <= " + "'" + currentTimeValueOnPostgres + "';"
 
 	err := s.db.Raw("INSERT INTO books (id, name, author, description, category_id) VALUES " + sqlValues + returnValues).Scan(&p).Error
@@ -148,4 +151,28 @@ func (s *pgService) IsCategoryExisted(ctx context.Context, cat *domain.Category)
 		return false, err
 	}
 	return true, nil
+}
+
+func (s *pgService) AddTags(ctx context.Context, p *domain.Book, t []domain.Tag) ([]domain.BookTag, error) {
+
+	sqlValues := ""
+	for i := 0; i < len(t); i++ {
+		sqlValues += fmt.Sprintf("('%v', '%v', '%v')", domain.NewUUID(), p.ID.String(), t[i].ID.String())
+		if i == len(t)-1 {
+			sqlValues += ";"
+		} else {
+			sqlValues += ",\n"
+		}
+	}
+
+	currentTimeValueOnPostgres := pgTimeFormat(time.Now().UTC())
+	returnValues := "SELECT * FROM bookstags WHERE bookstags.created_at <= " + "'" + currentTimeValueOnPostgres + "';"
+
+	res := []domain.BookTag{}
+	err := s.db.Raw("INSERT INTO bookstags (id, book_id, tag_id) VALUES " + sqlValues + returnValues).Scan(&res).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }

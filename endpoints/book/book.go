@@ -191,3 +191,49 @@ func MakeDeleteEndpoint(s service.Service) endpoint.Endpoint {
 		return DeleteResponse{"success"}, nil
 	}
 }
+
+// AddTagsData data for AddTags
+type AddTagsData struct {
+	TagID domain.UUID `json:"tag_id"`
+}
+
+// AddTagsRequest request struct for AddTags
+type AddTagsRequest struct {
+	BookID domain.UUID   `json:"-"`
+	Tag    []AddTagsData `json:"tag"`
+}
+
+// AddTagsResponse response struct for AddTags
+type AddTagsResponse struct {
+	Status string `json:"status"`
+}
+
+// StatusCode customstatus code for success create Book
+func (AddTagsResponse) StatusCode() int {
+	return http.StatusCreated
+}
+
+// MakeAddTagsToBookEndpoint make endpoint for create a Book
+func MakeAddTagsToBookEndpoint(s service.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+
+		req := request.(AddTagsRequest)
+
+		inpData := []domain.Tag{}
+		for _, cdata := range req.Tag {
+			tag := domain.Tag{
+				Model: domain.Model{ID: cdata.TagID},
+			}
+			inpData = append(inpData, tag)
+		}
+
+		book := domain.Book{Model: domain.Model{ID: req.BookID}}
+
+		_, err := s.BookService.AddTags(ctx, &book, inpData)
+		if err != nil {
+			return nil, err
+		}
+
+		return AddTagsResponse{Status: "success"}, nil
+	}
+}

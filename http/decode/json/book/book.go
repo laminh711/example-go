@@ -65,3 +65,15 @@ func DeleteRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	}
 	return bookEndpoint.DeleteRequest{BookID: bookID}, nil
 }
+
+// AddTagsToBookRequest decode AddTagsRequest
+func AddTagsToBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	bookID, err := domain.UUIDFromString(chi.URLParam(r, "book_id"))
+	var req bookEndpoint.AddTagsRequest
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return nil, err
+	}
+	req.BookID = bookID
+	return req, err
+}

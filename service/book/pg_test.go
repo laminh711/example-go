@@ -433,8 +433,7 @@ func TestPGService_IsCategoryExisted(t *testing.T) {
 	}
 
 	category := domain.Category{
-		Model: domain.Model{ID: domain.NewUUID()},
-		Name:  "ExistedCategory",
+		Name: "ExistedCategory",
 	}
 	err = testDB.Create(&category).Error
 	if err != nil {

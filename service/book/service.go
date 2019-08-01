@@ -21,4 +21,5 @@ type Service interface {
 	Delete(ctx context.Context, p *domain.Book) error
 	IsCategoryExisted(ctx context.Context, cat *domain.Category) (bool, error)
 	CreateBatch(ctx context.Context, p []domain.Book) error
+	AddTags(ctx context.Context, p *domain.Book, t []domain.Tag) ([]domain.BookTag, error)
 }

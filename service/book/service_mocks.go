@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	lockServiceMockAddTags           sync.RWMutex
 	lockServiceMockCreate            sync.RWMutex
 	lockServiceMockCreateBatch       sync.RWMutex
 	lockServiceMockDelete            sync.RWMutex
@@ -29,6 +30,9 @@ var _ Service = &ServiceMock{}
 //
 //         // make and configure a mocked Service
 //         mockedService := &ServiceMock{
+//             AddTagsFunc: func(ctx context.Context, p *domain.Book, t []domain.Tag) ([]domain.BookTag, error) {
+// 	               panic("mock out the AddTags method")
+//             },
 //             CreateFunc: func(ctx context.Context, p *domain.Book) error {
 // 	               panic("mock out the Create method")
 //             },
@@ -57,6 +61,9 @@ var _ Service = &ServiceMock{}
 //
 //     }
 type ServiceMock struct {
+	// AddTagsFunc mocks the AddTags method.
+	AddTagsFunc func(ctx context.Context, p *domain.Book, t []domain.Tag) ([]domain.BookTag, error)
+
 	// CreateFunc mocks the Create method.
 	CreateFunc func(ctx context.Context, p *domain.Book) error
 
@@ -80,6 +87,15 @@ type ServiceMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// AddTags holds details about calls to the AddTags method.
+		AddTags []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// P is the p argument value.
+			P *domain.Book
+			// T is the t argument value.
+			T []domain.Tag
+		}
 		// Create holds details about calls to the Create method.
 		Create []struct {
 			// Ctx is the ctx argument value.
@@ -130,6 +146,45 @@ type ServiceMock struct {
 			P *domain.Book
 		}
 	}
+}
+
+// AddTags calls AddTagsFunc.
+func (mock *ServiceMock) AddTags(ctx context.Context, p *domain.Book, t []domain.Tag) ([]domain.BookTag, error) {
+	if mock.AddTagsFunc == nil {
+		panic("ServiceMock.AddTagsFunc: method is nil but Service.AddTags was just called")
+	}
+	callInfo := struct {
+		Ctx context.Context
+		P   *domain.Book
+		T   []domain.Tag
+	}{
+		Ctx: ctx,
+		P:   p,
+		T:   t,
+	}
+	lockServiceMockAddTags.Lock()
+	mock.calls.AddTags = append(mock.calls.AddTags, callInfo)
+	lockServiceMockAddTags.Unlock()
+	return mock.AddTagsFunc(ctx, p, t)
+}
+
+// AddTagsCalls gets all the calls that were made to AddTags.
+// Check the length with:
+//     len(mockedService.AddTagsCalls())
+func (mock *ServiceMock) AddTagsCalls() []struct {
+	Ctx context.Context
+	P   *domain.Book
+	T   []domain.Tag
+} {
+	var calls []struct {
+		Ctx context.Context
+		P   *domain.Book
+		T   []domain.Tag
+	}
+	lockServiceMockAddTags.RLock()
+	calls = mock.calls.AddTags
+	lockServiceMockAddTags.RUnlock()
+	return calls
 }
 
 // Create calls CreateFunc.
