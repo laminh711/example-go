@@ -10,6 +10,47 @@ import (
 	"time"
 )
 
+func TestPGService_CreateBatch(t *testing.T) {
+	t.Parallel()
+	testDB, _, cleanup := testutil.CreateTestDatabase(t)
+	defer cleanup()
+	err := testutil.MigrateTables(testDB)
+	if err != nil {
+		t.Fatalf("Failed to migrate table by error %v", err)
+	}
+
+	type args struct {
+		p []domain.Book
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Success",
+			args: args{
+				[]domain.Book{
+					domain.Book{
+						Name: "Science-Fiction",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &pgService{
+				db: testDB,
+			}
+			if err := s.CreateBatch(context.Background(), tt.args.p); (err != nil) != tt.wantErr {
+				t.Errorf("pgService.Create() error = %v, wantErr = %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestPGService_Create(t *testing.T) {
 	t.Parallel()
 	testDB, _, cleanup := testutil.CreateTestDatabase(t)

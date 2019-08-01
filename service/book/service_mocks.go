@@ -11,6 +11,7 @@ import (
 
 var (
 	lockServiceMockCreate            sync.RWMutex
+	lockServiceMockCreateBatch       sync.RWMutex
 	lockServiceMockDelete            sync.RWMutex
 	lockServiceMockFind              sync.RWMutex
 	lockServiceMockFindAll           sync.RWMutex
@@ -30,6 +31,9 @@ var _ Service = &ServiceMock{}
 //         mockedService := &ServiceMock{
 //             CreateFunc: func(ctx context.Context, p *domain.Book) error {
 // 	               panic("mock out the Create method")
+//             },
+//             CreateBatchFunc: func(ctx context.Context, p []domain.Book) error {
+// 	               panic("mock out the CreateBatch method")
 //             },
 //             DeleteFunc: func(ctx context.Context, p *domain.Book) error {
 // 	               panic("mock out the Delete method")
@@ -56,6 +60,9 @@ type ServiceMock struct {
 	// CreateFunc mocks the Create method.
 	CreateFunc func(ctx context.Context, p *domain.Book) error
 
+	// CreateBatchFunc mocks the CreateBatch method.
+	CreateBatchFunc func(ctx context.Context, p []domain.Book) error
+
 	// DeleteFunc mocks the Delete method.
 	DeleteFunc func(ctx context.Context, p *domain.Book) error
 
@@ -79,6 +86,13 @@ type ServiceMock struct {
 			Ctx context.Context
 			// P is the p argument value.
 			P *domain.Book
+		}
+		// CreateBatch holds details about calls to the CreateBatch method.
+		CreateBatch []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// P is the p argument value.
+			P []domain.Book
 		}
 		// Delete holds details about calls to the Delete method.
 		Delete []struct {
@@ -150,6 +164,41 @@ func (mock *ServiceMock) CreateCalls() []struct {
 	lockServiceMockCreate.RLock()
 	calls = mock.calls.Create
 	lockServiceMockCreate.RUnlock()
+	return calls
+}
+
+// CreateBatch calls CreateBatchFunc.
+func (mock *ServiceMock) CreateBatch(ctx context.Context, p []domain.Book) error {
+	if mock.CreateBatchFunc == nil {
+		panic("ServiceMock.CreateBatchFunc: method is nil but Service.CreateBatch was just called")
+	}
+	callInfo := struct {
+		Ctx context.Context
+		P   []domain.Book
+	}{
+		Ctx: ctx,
+		P:   p,
+	}
+	lockServiceMockCreateBatch.Lock()
+	mock.calls.CreateBatch = append(mock.calls.CreateBatch, callInfo)
+	lockServiceMockCreateBatch.Unlock()
+	return mock.CreateBatchFunc(ctx, p)
+}
+
+// CreateBatchCalls gets all the calls that were made to CreateBatch.
+// Check the length with:
+//     len(mockedService.CreateBatchCalls())
+func (mock *ServiceMock) CreateBatchCalls() []struct {
+	Ctx context.Context
+	P   []domain.Book
+} {
+	var calls []struct {
+		Ctx context.Context
+		P   []domain.Book
+	}
+	lockServiceMockCreateBatch.RLock()
+	calls = mock.calls.CreateBatch
+	lockServiceMockCreateBatch.RUnlock()
 	return calls
 }
 

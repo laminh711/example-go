@@ -21,12 +21,12 @@ type CreateData struct {
 
 // CreateRequest request struct for CreateBook
 type CreateRequest struct {
-	Book CreateData `json:"book"`
+	Book []CreateData `json:"book"`
 }
 
 // CreateResponse response struct for CreateBook
 type CreateResponse struct {
-	Book domain.Book `json:"book"`
+	Book []domain.Book `json:"book"`
 }
 
 // StatusCode customstatus code for success create Book
@@ -37,21 +37,48 @@ func (CreateResponse) StatusCode() int {
 // MakeCreateEndpoint make endpoint for create a Book
 func MakeCreateEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
+
+		res := CreateResponse{
+			[]domain.Book{},
+		}
+
 		req := request.(CreateRequest)
-		var (
-			book = &domain.Book{
-				Name:        req.Book.Name,
-				Author:      req.Book.Author,
-				Description: req.Book.Description,
-				CategoryID:  req.Book.CategoryID,
+
+		inpData := []domain.Book{}
+		for _, cdata := range req.Book {
+			book := &domain.Book{
+				Name:        cdata.Name,
+				Author:      cdata.Author,
+				Description: cdata.Description,
+				CategoryID:  cdata.CategoryID,
 			}
-		)
-		err := s.BookService.Create(ctx, book)
+			inpData = append(inpData, *book)
+		}
+
+		err := s.BookService.CreateBatch(ctx, inpData)
 		if err != nil {
 			return nil, err
 		}
 
-		return CreateResponse{Book: *book}, nil
+		res.Book = inpData
+
+		// for _, cdata := range req.Book {
+		// 	book := &domain.Book{
+		// 		Name:        cdata.Name,
+		// 		Author:      cdata.Author,
+		// 		Description: cdata.Description,
+		// 		CategoryID:  cdata.CategoryID,
+		// 	}
+
+		// 	err := s.BookService.Create(ctx, book)
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+
+		// 	res.Book = append(res.Book, *book)
+		// }
+
+		return res, nil
 	}
 }
 

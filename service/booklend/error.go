@@ -11,7 +11,17 @@ var (
 	ErrUserNotFound    = errUserNotFound{}
 	ErrInvalidTimeSpan = errInvalidTimeSpan{}
 	ErrRecordNotFound  = errRecordNotFound{}
+	ErrDuplicateBook   = errDuplicateBook{}
 )
+
+type errDuplicateBook struct{}
+
+func (errDuplicateBook) Error() string {
+	return "not allowed to borrowed a book twice"
+}
+func (errDuplicateBook) StatusCode() int {
+	return http.StatusBadRequest
+}
 
 type errInvalidTimeSpan struct{}
 

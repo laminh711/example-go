@@ -3,6 +3,7 @@ package book
 import (
 	"PRACTICESTUFF/example-go/domain"
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -18,6 +19,32 @@ func NewPGService(db *gorm.DB) Service {
 	return &pgService{
 		db: db,
 	}
+}
+
+// CreateBatch implement CreateBatch for BookService
+func (s *pgService) CreateBatch(ctx context.Context, p []domain.Book) error {
+
+	sqlValues := ""
+	for i := 0; i < len(p); i++ {
+		p[i].ID = domain.NewUUID()
+
+		sqlValues += fmt.Sprintf("('%v', '%v', '%v', '%v', '%v')", p[i].ID, p[i].Name, p[i].Author, p[i].Description, p[i].CategoryID.String())
+		if i == len(p)-1 {
+			sqlValues += ";"
+		} else {
+			sqlValues += ",\n"
+		}
+	}
+
+	t := time.Now().UTC()
+	currentTimeValueOnPostgres := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d.%d+00:00",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second(), t.Nanosecond()/1000)
+	returnValues := "SELECT * FROM books WHERE books.created_at <= " + "'" + currentTimeValueOnPostgres + "';"
+
+	err := s.db.Raw("INSERT INTO books (id, name, author, description, category_id) VALUES " + sqlValues + returnValues).Scan(&p).Error
+
+	return err
 }
 
 // Create implement Create for BookService

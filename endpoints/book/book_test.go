@@ -70,11 +70,13 @@ func TestMakeCreateEndpoint(t *testing.T) {
 		args args
 	}{
 		{
-			name: "update book endpoint parsed success",
+			name: "create book endpoint parsed success",
 			args: args{
 				CreateRequest{
-					CreateData{
-						Name: "Created name",
+					Book: []CreateData{
+						CreateData{
+							Name: "Created name",
+						},
 					},
 				},
 			},

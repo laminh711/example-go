@@ -12,6 +12,166 @@ import (
 	testutil "PRACTICESTUFF/example-go/config/database/pg/util"
 )
 
+func Test_validationMiddleware_CreateBatch(t *testing.T) {
+	existedCategory := domain.Category{
+		Model: domain.Model{ID: domain.NewUUID()},
+	}
+	serviceMock := &ServiceMock{
+		CreateBatchFunc: func(ctx context.Context, p []domain.Book) error {
+			return nil
+		},
+		IsCategoryExistedFunc: func(ctx context.Context, p *domain.Category) (bool, error) {
+			return p.ID == existedCategory.ID, nil
+		},
+	}
+
+	defaultCtx := context.Background()
+
+	testDB, _, cleanup := testutil.CreateTestDatabase(t)
+	defer cleanup()
+	err := testutil.MigrateTables(testDB)
+	if err != nil {
+		t.Fatalf("Failed to migrate table by error %v", err)
+	}
+
+	err = testDB.Create(&existedCategory).Error
+	if err != nil {
+		t.Fatalf("Failed to create existedCategory by error %v", err)
+	}
+
+	fakeCategoryID := domain.MustGetUUIDFromString("1698bbd6-e0c8-4957-a5a9-8c536970994b")
+
+	type args struct {
+		p []domain.Book
+	}
+	tests := []struct {
+		name            string
+		args            args
+		wantErr         error
+		errorStatusCode int
+	}{
+		{
+			name: "Pass validation",
+			args: args{
+				[]domain.Book{
+					domain.Book{
+						Name:        "Call from angel",
+						Description: "Detective-Romantic mix novel from Russo",
+						CategoryID:  existedCategory.ID,
+					},
+				},
+			},
+		},
+		{
+			name: "Failed by empty name",
+			args: args{
+				[]domain.Book{
+					domain.Book{
+						Name:        "",
+						Description: "A description for an empty book",
+						CategoryID:  existedCategory.ID,
+					},
+				},
+			},
+			wantErr:         ErrNameIsRequired,
+			errorStatusCode: http.StatusBadRequest,
+		},
+		{
+			name: "Failed by short name",
+			args: args{
+				[]domain.Book{
+					domain.Book{
+						Name:        "5char",
+						Description: "A description for a short book",
+						CategoryID:  existedCategory.ID,
+					},
+				},
+			},
+			wantErr:         ErrNameIsTooShort,
+			errorStatusCode: http.StatusBadRequest,
+		},
+		{
+			name: "Failed by empty description",
+			args: args{
+				[]domain.Book{
+					domain.Book{
+						Name:        "You can be happy no matter what",
+						Description: "",
+						CategoryID:  existedCategory.ID,
+					},
+				},
+			},
+			wantErr:         ErrDescriptionIsRequired,
+			errorStatusCode: http.StatusBadRequest,
+		},
+		{
+			name: "Failed by short description",
+			args: args{
+				[]domain.Book{
+					domain.Book{
+						Name:        "Peter Pan",
+						Description: "short",
+						CategoryID:  existedCategory.ID,
+					},
+				},
+			},
+			wantErr:         ErrDescriptionIsTooShort,
+			errorStatusCode: http.StatusBadRequest,
+		},
+		{
+			name: "Failed by invalid category id",
+			args: args{
+				[]domain.Book{
+					domain.Book{
+						Name:        "book has fake category",
+						Description: "A description for an book doesn't have valid categoryID",
+						CategoryID:  fakeCategoryID,
+					},
+				},
+			},
+			wantErr:         ErrCategoryNotExisted,
+			errorStatusCode: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mw := validationMiddleware{
+				Service: serviceMock,
+			}
+			err := mw.CreateBatch(defaultCtx, tt.args.p)
+			if err != nil {
+				if tt.wantErr == nil {
+					t.Errorf("validationMiddleware.Create() error = %v, wantErr = %v", err, tt.wantErr)
+					return
+				}
+
+				if tt.wantErr != err {
+					t.Errorf("validationMiddleware.Create() error = %v, wantErr = %v", err, tt.wantErr)
+					return
+				}
+
+				status, ok := err.(interface{ StatusCode() int })
+				if !ok {
+					t.Errorf("validationMiddleware.Create() error %v doesn't implement StatusCode()", err)
+				}
+
+				if tt.errorStatusCode != status.StatusCode() {
+					t.Errorf("validationMiddleware.Create() status = %v, want status code %v", status.StatusCode(), tt.errorStatusCode)
+					return
+				}
+
+				return
+			}
+
+			if tt.wantErr != nil {
+				t.Errorf("validationMiddleware.Create() error = %v, wantErr = %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
 func Test_validationMiddleware_Create(t *testing.T) {
 	existedCategory := domain.Category{
 		Model: domain.Model{ID: domain.NewUUID()},

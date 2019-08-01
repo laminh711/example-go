@@ -11,6 +11,7 @@ import (
 
 var (
 	lockServiceMockCreate         sync.RWMutex
+	lockServiceMockCreateBatch    sync.RWMutex
 	lockServiceMockIsBookExisted  sync.RWMutex
 	lockServiceMockIsBooklendable sync.RWMutex
 	lockServiceMockIsUserExisted  sync.RWMutex
@@ -28,6 +29,9 @@ var _ Service = &ServiceMock{}
 //         mockedService := &ServiceMock{
 //             CreateFunc: func(ctx context.Context, p *domain.Booklend) error {
 // 	               panic("mock out the Create method")
+//             },
+//             CreateBatchFunc: func(ctx context.Context, p []domain.Booklend) error {
+// 	               panic("mock out the CreateBatch method")
 //             },
 //             IsBookExistedFunc: func(ctx context.Context, p *domain.Book) (bool, error) {
 // 	               panic("mock out the IsBookExisted method")
@@ -48,6 +52,9 @@ type ServiceMock struct {
 	// CreateFunc mocks the Create method.
 	CreateFunc func(ctx context.Context, p *domain.Booklend) error
 
+	// CreateBatchFunc mocks the CreateBatch method.
+	CreateBatchFunc func(ctx context.Context, p []domain.Booklend) error
+
 	// IsBookExistedFunc mocks the IsBookExisted method.
 	IsBookExistedFunc func(ctx context.Context, p *domain.Book) (bool, error)
 
@@ -65,6 +72,13 @@ type ServiceMock struct {
 			Ctx context.Context
 			// P is the p argument value.
 			P *domain.Booklend
+		}
+		// CreateBatch holds details about calls to the CreateBatch method.
+		CreateBatch []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// P is the p argument value.
+			P []domain.Booklend
 		}
 		// IsBookExisted holds details about calls to the IsBookExisted method.
 		IsBookExisted []struct {
@@ -122,6 +136,41 @@ func (mock *ServiceMock) CreateCalls() []struct {
 	lockServiceMockCreate.RLock()
 	calls = mock.calls.Create
 	lockServiceMockCreate.RUnlock()
+	return calls
+}
+
+// CreateBatch calls CreateBatchFunc.
+func (mock *ServiceMock) CreateBatch(ctx context.Context, p []domain.Booklend) error {
+	if mock.CreateBatchFunc == nil {
+		panic("ServiceMock.CreateBatchFunc: method is nil but Service.CreateBatch was just called")
+	}
+	callInfo := struct {
+		Ctx context.Context
+		P   []domain.Booklend
+	}{
+		Ctx: ctx,
+		P:   p,
+	}
+	lockServiceMockCreateBatch.Lock()
+	mock.calls.CreateBatch = append(mock.calls.CreateBatch, callInfo)
+	lockServiceMockCreateBatch.Unlock()
+	return mock.CreateBatchFunc(ctx, p)
+}
+
+// CreateBatchCalls gets all the calls that were made to CreateBatch.
+// Check the length with:
+//     len(mockedService.CreateBatchCalls())
+func (mock *ServiceMock) CreateBatchCalls() []struct {
+	Ctx context.Context
+	P   []domain.Booklend
+} {
+	var calls []struct {
+		Ctx context.Context
+		P   []domain.Booklend
+	}
+	lockServiceMockCreateBatch.RLock()
+	calls = mock.calls.CreateBatch
+	lockServiceMockCreateBatch.RUnlock()
 	return calls
 }
 
