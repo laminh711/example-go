@@ -17,6 +17,7 @@ var (
 	lockServiceMockFind              sync.RWMutex
 	lockServiceMockFindAll           sync.RWMutex
 	lockServiceMockIsCategoryExisted sync.RWMutex
+	lockServiceMockIsTagNameExisted  sync.RWMutex
 	lockServiceMockUpdate            sync.RWMutex
 )
 
@@ -51,6 +52,9 @@ var _ Service = &ServiceMock{}
 //             IsCategoryExistedFunc: func(ctx context.Context, cat *domain.Category) (bool, error) {
 // 	               panic("mock out the IsCategoryExisted method")
 //             },
+//             IsTagNameExistedFunc: func(ctx context.Context, t string) (bool, error) {
+// 	               panic("mock out the IsTagNameExisted method")
+//             },
 //             UpdateFunc: func(ctx context.Context, p *domain.Book) (*domain.Book, error) {
 // 	               panic("mock out the Update method")
 //             },
@@ -81,6 +85,9 @@ type ServiceMock struct {
 
 	// IsCategoryExistedFunc mocks the IsCategoryExisted method.
 	IsCategoryExistedFunc func(ctx context.Context, cat *domain.Category) (bool, error)
+
+	// IsTagNameExistedFunc mocks the IsTagNameExisted method.
+	IsTagNameExistedFunc func(ctx context.Context, t string) (bool, error)
 
 	// UpdateFunc mocks the Update method.
 	UpdateFunc func(ctx context.Context, p *domain.Book) (*domain.Book, error)
@@ -137,6 +144,13 @@ type ServiceMock struct {
 			Ctx context.Context
 			// Cat is the cat argument value.
 			Cat *domain.Category
+		}
+		// IsTagNameExisted holds details about calls to the IsTagNameExisted method.
+		IsTagNameExisted []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// T is the t argument value.
+			T string
 		}
 		// Update holds details about calls to the Update method.
 		Update []struct {
@@ -394,6 +408,41 @@ func (mock *ServiceMock) IsCategoryExistedCalls() []struct {
 	lockServiceMockIsCategoryExisted.RLock()
 	calls = mock.calls.IsCategoryExisted
 	lockServiceMockIsCategoryExisted.RUnlock()
+	return calls
+}
+
+// IsTagNameExisted calls IsTagNameExistedFunc.
+func (mock *ServiceMock) IsTagNameExisted(ctx context.Context, t string) (bool, error) {
+	if mock.IsTagNameExistedFunc == nil {
+		panic("ServiceMock.IsTagNameExistedFunc: method is nil but Service.IsTagNameExisted was just called")
+	}
+	callInfo := struct {
+		Ctx context.Context
+		T   string
+	}{
+		Ctx: ctx,
+		T:   t,
+	}
+	lockServiceMockIsTagNameExisted.Lock()
+	mock.calls.IsTagNameExisted = append(mock.calls.IsTagNameExisted, callInfo)
+	lockServiceMockIsTagNameExisted.Unlock()
+	return mock.IsTagNameExistedFunc(ctx, t)
+}
+
+// IsTagNameExistedCalls gets all the calls that were made to IsTagNameExisted.
+// Check the length with:
+//     len(mockedService.IsTagNameExistedCalls())
+func (mock *ServiceMock) IsTagNameExistedCalls() []struct {
+	Ctx context.Context
+	T   string
+} {
+	var calls []struct {
+		Ctx context.Context
+		T   string
+	}
+	lockServiceMockIsTagNameExisted.RLock()
+	calls = mock.calls.IsTagNameExisted
+	lockServiceMockIsTagNameExisted.RUnlock()
 	return calls
 }
 

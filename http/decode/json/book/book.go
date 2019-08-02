@@ -26,7 +26,8 @@ func FindAllRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	r.URL.Path = strings.ToLower(r.URL.Path)
 	nameQuery := r.URL.Query().Get("name")
 	statusQuery := r.URL.Query().Get("status")
-	return bookEndpoint.FindAllRequest{Name: nameQuery, Status: statusQuery}, nil
+	tagNameQuery := r.URL.Query().Get("tagname")
+	return bookEndpoint.FindAllRequest{Name: nameQuery, Status: statusQuery, TagName: tagNameQuery}, nil
 }
 
 // CreateRequest decode CreateRequest

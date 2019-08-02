@@ -8,8 +8,9 @@ import (
 
 // FindAllQueries query struct got from FindAllRequest
 type FindAllQueries struct {
-	Name   string
-	Status string
+	Name    string
+	Status  string
+	TagName string
 }
 
 // Service interface for project service
@@ -22,4 +23,5 @@ type Service interface {
 	IsCategoryExisted(ctx context.Context, cat *domain.Category) (bool, error)
 	CreateBatch(ctx context.Context, p []domain.Book) ([]domain.Book, error)
 	AddTags(ctx context.Context, p *domain.Book, t []domain.Tag) ([]domain.BookTag, error)
+	IsTagNameExisted(ctx context.Context, t string) (bool, error)
 }

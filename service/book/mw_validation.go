@@ -79,6 +79,19 @@ func (mw validationMiddleware) Create(ctx context.Context, book *domain.Book) (e
 }
 
 func (mw validationMiddleware) FindAll(ctx context.Context, queries FindAllQueries) ([]domain.Book, error) {
+
+	if queries.TagName == "" {
+		return mw.Service.FindAll(ctx, queries)
+	}
+
+	ok, err := mw.Service.IsTagNameExisted(ctx, queries.TagName)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrTagNameNotExisted
+	}
+
 	return mw.Service.FindAll(ctx, queries)
 }
 func (mw validationMiddleware) Find(ctx context.Context, book *domain.Book) (*domain.Book, error) {

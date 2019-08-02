@@ -110,8 +110,9 @@ func MakeFindEndpoint(s service.Service) endpoint.Endpoint {
 
 // FindAllRequest request struct for FindAllBook
 type FindAllRequest struct {
-	Name   string
-	Status string
+	Name    string
+	Status  string
+	TagName string
 }
 
 // FindAllResponse request struct for FindAllBook

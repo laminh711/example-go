@@ -77,7 +77,7 @@ func (s *pgService) Find(ctx context.Context, p *domain.Book) (*domain.Book, err
 func (s *pgService) FindAll(ctx context.Context, queries FindAllQueries) ([]domain.Book, error) {
 	var res []domain.Book
 
-	tmp := s.db.Where("books.name like ?", "%"+queries.Name+"%").Find(&res)
+	tmp := s.db.Table("books").Where("books.name like ?", "%"+queries.Name+"%").Find(&res)
 	err := tmp.Error
 	if err != nil {
 		return nil, err
@@ -105,11 +105,36 @@ func (s *pgService) FindAll(ctx context.Context, queries FindAllQueries) ([]doma
 			}
 		}
 	}
+
+	if queries.TagName != "" {
+		relatedBookQuery := s.db.Table("book_tags").
+			Select("book_id").
+			Joins("JOIN tags ON book_tags.tag_id = tags.id").
+			Where("tags.name = ?", queries.TagName).
+			QueryExpr()
+		tmp = tmp.Where("books.id IN (?)", relatedBookQuery).Find(&res)
+		err := tmp.Error
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
 	return res, nil
+}
+
+func (s *pgService) IsTagNameExisted(ctx context.Context, t string) (bool, error) {
+	var res = &domain.Tag{}
+	if err := s.db.Find(&res, "name = ?", t).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+		return true, err
+	}
+	return true, nil
 }
 
 // Update implement update a book for BookService
@@ -170,10 +195,10 @@ func (s *pgService) AddTags(ctx context.Context, p *domain.Book, t []domain.Tag)
 	}
 
 	currentTimeValueOnPostgres := pgTimeFormat(time.Now().UTC())
-	returnValues := "SELECT * FROM bookstags WHERE bookstags.created_at <= " + "'" + currentTimeValueOnPostgres + "';"
+	returnValues := "SELECT * FROM book_tags WHERE book_tags.created_at >= " + "'" + currentTimeValueOnPostgres + "';"
 
 	res := []domain.BookTag{}
-	err := s.db.Raw("INSERT INTO bookstags (id, book_id, tag_id) VALUES " + sqlValues + returnValues).Scan(&res).Error
+	err := s.db.Raw("INSERT INTO book_tags (id, book_id, tag_id) VALUES " + sqlValues + returnValues).Scan(&res).Error
 
 	if err != nil {
 		return nil, err

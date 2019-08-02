@@ -272,6 +272,48 @@ func TestPGService_FindAll(t *testing.T) {
 		t.Fatalf("Failed to create borrowedBook by error %v", err)
 	}
 
+	tag1 := domain.Tag{
+		Name: "tag1",
+	}
+	err = testDB.Create(&tag1).Error
+	if err != nil {
+		t.Fatalf("Failed to create tag1 by error %v", err)
+	}
+
+	tag2 := domain.Tag{
+		Name: "tag2",
+	}
+	err = testDB.Create(&tag2).Error
+	if err != nil {
+		t.Fatalf("Failed to create tag2 by error %v", err)
+	}
+
+	tag3 := domain.Tag{
+		Name: "tag3",
+	}
+	err = testDB.Create(&tag3).Error
+	if err != nil {
+		t.Fatalf("Failed to create tag3 by error %v", err)
+	}
+
+	btag := domain.BookTag{
+		BookID: book.ID,
+		TagID:  tag1.ID,
+	}
+	err = testDB.Create(&btag).Error
+	if err != nil {
+		t.Fatalf("Failed to create btag by error %v", err)
+	}
+
+	btag2 := domain.BookTag{
+		BookID: borrowedBook.ID,
+		TagID:  tag2.ID,
+	}
+	err = testDB.Create(&btag2).Error
+	if err != nil {
+		t.Fatalf("Failed to create btag2 by error %v", err)
+	}
+
 	booklend := domain.Booklend{
 		BookID: borrowedBook.ID,
 		UserID: user.ID,
@@ -298,7 +340,7 @@ func TestPGService_FindAll(t *testing.T) {
 			want: []domain.Book{book, borrowedBook},
 		},
 		{
-			name: "All, with name query",
+			name: "with name query",
 			args: args{
 				q: FindAllQueries{
 					Name: "book",
@@ -307,7 +349,7 @@ func TestPGService_FindAll(t *testing.T) {
 			want: []domain.Book{book, borrowedBook},
 		},
 		{
-			name: "All, with name query",
+			name: "with name query",
 			args: args{
 				q: FindAllQueries{
 					Name: "book somethi",
@@ -316,7 +358,7 @@ func TestPGService_FindAll(t *testing.T) {
 			want: []domain.Book{book},
 		},
 		{
-			name: "All, with name query",
+			name: "with name query",
 			args: args{
 				q: FindAllQueries{
 					Name: "borrow",
@@ -325,7 +367,7 @@ func TestPGService_FindAll(t *testing.T) {
 			want: []domain.Book{borrowedBook},
 		},
 		{
-			name: "All, with status query",
+			name: "with status query available",
 			args: args{
 				q: FindAllQueries{
 					Status: "available",
@@ -334,13 +376,40 @@ func TestPGService_FindAll(t *testing.T) {
 			want: []domain.Book{book},
 		},
 		{
-			name: "All, with status query",
+			name: "with status query unavailable",
 			args: args{
 				q: FindAllQueries{
 					Status: "unavailable",
 				},
 			},
 			want: []domain.Book{borrowedBook},
+		},
+		{
+			name: "with tagname query tag1",
+			args: args{
+				q: FindAllQueries{
+					TagName: "tag1",
+				},
+			},
+			want: []domain.Book{book},
+		},
+		{
+			name: "with tagname query tag2",
+			args: args{
+				q: FindAllQueries{
+					TagName: "tag2",
+				},
+			},
+			want: []domain.Book{borrowedBook},
+		},
+		{
+			name: "with tagname query tag3",
+			args: args{
+				q: FindAllQueries{
+					TagName: "tag3",
+				},
+			},
+			want: []domain.Book{},
 		},
 	}
 	for _, tt := range tests {

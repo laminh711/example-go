@@ -505,37 +505,84 @@ func Test_validationMiddleware_Find(t *testing.T) {
 }
 
 func Test_validationMiddleware_FindAll(t *testing.T) {
-	type fields struct {
-		Service Service
+
+	testDB, _, cleanup := testutil.CreateTestDatabase(t)
+	defer cleanup()
+	err := testutil.MigrateTables(testDB)
+	if err != nil {
+		t.Fatalf("Failed to migrate table by error %v", err)
+	}
+
+	tag1 := domain.Tag{
+		Name: "tag1",
+	}
+	err = testDB.Create(&tag1).Error
+	if err != nil {
+		t.Fatalf("Failed to create tag1 by error %v", err)
+	}
+
+	tag2 := domain.Tag{
+		Name: "tag2",
+	}
+	err = testDB.Create(&tag2).Error
+	if err != nil {
+		t.Fatalf("Failed to create tag2 by error %v", err)
+	}
+
+	serviceMock := &ServiceMock{
+		FindAllFunc: func(ctx context.Context, p FindAllQueries) ([]domain.Book, error) {
+			return []domain.Book{}, nil
+		},
+		IsTagNameExistedFunc: func(ctx context.Context, t string) (bool, error) {
+			return tag1.Name == t || tag2.Name == t, nil
+		},
 	}
 	type args struct {
-		ctx context.Context
-		p   *domain.Book
-		q   FindAllQueries
+		q FindAllQueries
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
-		want    *domain.Book
 		wantErr error
-	}{}
+	}{
+		{
+			name: "pass",
+			args: args{
+				FindAllQueries{
+					Name:    "name is here",
+					Status:  "available",
+					TagName: "tag1",
+				},
+			},
+		},
+		{
+			name: "failed by non existence tag name",
+			args: args{
+				FindAllQueries{
+					TagName: "tag3",
+				},
+			},
+			wantErr: ErrTagNameNotExisted,
+		},
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mw := validationMiddleware{
-				Service: tt.fields.Service,
+				Service: serviceMock,
 			}
-			got, err := mw.FindAll(tt.args.ctx, tt.args.q)
+			_, err := mw.FindAll(context.Background(), tt.args.q)
 
 			if err != nil {
-				t.Errorf("validationMiddleware.Find() error = %v, wantErr %v", err, tt.wantErr)
-				return
+				if err != tt.wantErr {
+					t.Errorf("validationMiddleware.FindAll() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
 			}
 
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("validationMiddleware.Find() got %v, want %v", got, tt.want)
-			}
+			// if !reflect.DeepEqual(got, tt.want) {
+			// 	t.Errorf("validationMiddleware.FindAll() got %v, want %v", got, tt.want)
+			// }
 			return
 		})
 	}
