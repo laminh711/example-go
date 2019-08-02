@@ -6,6 +6,7 @@ import (
 	"PRACTICESTUFF/example-go/domain"
 	"PRACTICESTUFF/example-go/service"
 	bookService "PRACTICESTUFF/example-go/service/book"
+
 	"context"
 	"testing"
 )
@@ -69,11 +70,13 @@ func TestMakeCreateEndpoint(t *testing.T) {
 		args args
 	}{
 		{
-			name: "update book endpoint parsed success",
+			name: "create book endpoint parsed success",
 			args: args{
 				CreateRequest{
-					CreateData{
-						Name: "Created name",
+					Book: []CreateData{
+						CreateData{
+							Name: "Created name",
+						},
 					},
 				},
 			},
@@ -131,7 +134,7 @@ func TestMakeFindBookEndpoint(t *testing.T) {
 func TestMakeFindAllEndpoint(t *testing.T) {
 	mock := service.Service{
 		BookService: &bookService.ServiceMock{
-			FindAllFunc: func(_ context.Context) ([]domain.Book, error) {
+			FindAllFunc: func(_ context.Context, q bookService.FindAllQueries) ([]domain.Book, error) {
 				return []domain.Book{}, nil
 			},
 		},

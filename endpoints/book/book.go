@@ -8,6 +8,7 @@ import (
 
 	"PRACTICESTUFF/example-go/domain"
 	"PRACTICESTUFF/example-go/service"
+	bookService "PRACTICESTUFF/example-go/service/book"
 )
 
 // CreateData data for CreateBook
@@ -20,12 +21,12 @@ type CreateData struct {
 
 // CreateRequest request struct for CreateBook
 type CreateRequest struct {
-	Book CreateData `json:"book"`
+	Book []CreateData `json:"book"`
 }
 
 // CreateResponse response struct for CreateBook
 type CreateResponse struct {
-	Book domain.Book `json:"book"`
+	Book []domain.Book `json:"book"`
 }
 
 // StatusCode customstatus code for success create Book
@@ -36,21 +37,48 @@ func (CreateResponse) StatusCode() int {
 // MakeCreateEndpoint make endpoint for create a Book
 func MakeCreateEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
+
+		res := CreateResponse{
+			[]domain.Book{},
+		}
+
 		req := request.(CreateRequest)
-		var (
-			book = &domain.Book{
-				Name:        req.Book.Name,
-				Author:      req.Book.Author,
-				Description: req.Book.Description,
-				CategoryID:  req.Book.CategoryID,
+
+		inpData := []domain.Book{}
+		for _, cdata := range req.Book {
+			book := &domain.Book{
+				Name:        cdata.Name,
+				Author:      cdata.Author,
+				Description: cdata.Description,
+				CategoryID:  cdata.CategoryID,
 			}
-		)
-		err := s.BookService.Create(ctx, book)
+			inpData = append(inpData, *book)
+		}
+
+		sth, err := s.BookService.CreateBatch(ctx, inpData)
 		if err != nil {
 			return nil, err
 		}
 
-		return CreateResponse{Book: *book}, nil
+		res.Book = inpData
+
+		// for _, cdata := range req.Book {
+		// 	book := &domain.Book{
+		// 		Name:        cdata.Name,
+		// 		Author:      cdata.Author,
+		// 		Description: cdata.Description,
+		// 		CategoryID:  cdata.CategoryID,
+		// 	}
+
+		// 	err := s.BookService.Create(ctx, book)
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+
+		// 	res.Book = append(res.Book, *book)
+		// }
+
+		return CreateResponse{Book: sth}, nil
 	}
 }
 
@@ -81,7 +109,11 @@ func MakeFindEndpoint(s service.Service) endpoint.Endpoint {
 }
 
 // FindAllRequest request struct for FindAllBook
-type FindAllRequest struct{}
+type FindAllRequest struct {
+	Name    string
+	Status  string
+	TagName string
+}
 
 // FindAllResponse request struct for FindAllBook
 type FindAllResponse struct {
@@ -91,7 +123,8 @@ type FindAllResponse struct {
 // MakeFindAllEndpoint make endpoint for FindAllBook
 func MakeFindAllEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		books, err := s.BookService.FindAll(ctx)
+		req := request.(FindAllRequest)
+		books, err := s.BookService.FindAll(ctx, bookService.FindAllQueries(req))
 		if err != nil {
 			return nil, err
 		}
@@ -157,5 +190,51 @@ func MakeDeleteEndpoint(s service.Service) endpoint.Endpoint {
 			return nil, err
 		}
 		return DeleteResponse{"success"}, nil
+	}
+}
+
+// AddTagsData data for AddTags
+type AddTagsData struct {
+	TagID domain.UUID `json:"tag_id"`
+}
+
+// AddTagsRequest request struct for AddTags
+type AddTagsRequest struct {
+	BookID domain.UUID   `json:"-"`
+	Tag    []AddTagsData `json:"tag"`
+}
+
+// AddTagsResponse response struct for AddTags
+type AddTagsResponse struct {
+	Status string `json:"status"`
+}
+
+// StatusCode customstatus code for success create Book
+func (AddTagsResponse) StatusCode() int {
+	return http.StatusCreated
+}
+
+// MakeAddTagsToBookEndpoint make endpoint for create a Book
+func MakeAddTagsToBookEndpoint(s service.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+
+		req := request.(AddTagsRequest)
+
+		inpData := []domain.Tag{}
+		for _, cdata := range req.Tag {
+			tag := domain.Tag{
+				Model: domain.Model{ID: cdata.TagID},
+			}
+			inpData = append(inpData, tag)
+		}
+
+		book := domain.Book{Model: domain.Model{ID: req.BookID}}
+
+		_, err := s.BookService.AddTags(ctx, &book, inpData)
+		if err != nil {
+			return nil, err
+		}
+
+		return AddTagsResponse{Status: "success"}, nil
 	}
 }

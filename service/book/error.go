@@ -12,7 +12,18 @@ var (
 	ErrDescriptionIsTooShort = errDescriptionIsTooShort{}
 	ErrRecordNotFound        = errRecordNotFound{}
 	ErrCategoryNotExisted    = errCategoryNotExisted{}
+	ErrTagNameNotExisted     = errTagNameNotExisted{}
 )
+
+type errTagNameNotExisted struct{}
+
+func (errTagNameNotExisted) Error() string {
+	return "tag name not existed"
+}
+
+func (errTagNameNotExisted) StatusCode() int {
+	return http.StatusBadRequest
+}
 
 type errDescriptionIsRequired struct{}
 

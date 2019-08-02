@@ -10,11 +10,14 @@ import (
 )
 
 var (
+	lockServiceMockAddTags           sync.RWMutex
 	lockServiceMockCreate            sync.RWMutex
+	lockServiceMockCreateBatch       sync.RWMutex
 	lockServiceMockDelete            sync.RWMutex
 	lockServiceMockFind              sync.RWMutex
 	lockServiceMockFindAll           sync.RWMutex
 	lockServiceMockIsCategoryExisted sync.RWMutex
+	lockServiceMockIsTagNameExisted  sync.RWMutex
 	lockServiceMockUpdate            sync.RWMutex
 )
 
@@ -28,8 +31,14 @@ var _ Service = &ServiceMock{}
 //
 //         // make and configure a mocked Service
 //         mockedService := &ServiceMock{
+//             AddTagsFunc: func(ctx context.Context, p *domain.Book, t []domain.Tag) ([]domain.BookTag, error) {
+// 	               panic("mock out the AddTags method")
+//             },
 //             CreateFunc: func(ctx context.Context, p *domain.Book) error {
 // 	               panic("mock out the Create method")
+//             },
+//             CreateBatchFunc: func(ctx context.Context, p []domain.Book) ([]domain.Book, error) {
+// 	               panic("mock out the CreateBatch method")
 //             },
 //             DeleteFunc: func(ctx context.Context, p *domain.Book) error {
 // 	               panic("mock out the Delete method")
@@ -37,11 +46,14 @@ var _ Service = &ServiceMock{}
 //             FindFunc: func(ctx context.Context, p *domain.Book) (*domain.Book, error) {
 // 	               panic("mock out the Find method")
 //             },
-//             FindAllFunc: func(ctx context.Context) ([]domain.Book, error) {
+//             FindAllFunc: func(ctx context.Context, queries FindAllQueries) ([]domain.Book, error) {
 // 	               panic("mock out the FindAll method")
 //             },
 //             IsCategoryExistedFunc: func(ctx context.Context, cat *domain.Category) (bool, error) {
 // 	               panic("mock out the IsCategoryExisted method")
+//             },
+//             IsTagNameExistedFunc: func(ctx context.Context, t string) (bool, error) {
+// 	               panic("mock out the IsTagNameExisted method")
 //             },
 //             UpdateFunc: func(ctx context.Context, p *domain.Book) (*domain.Book, error) {
 // 	               panic("mock out the Update method")
@@ -53,8 +65,14 @@ var _ Service = &ServiceMock{}
 //
 //     }
 type ServiceMock struct {
+	// AddTagsFunc mocks the AddTags method.
+	AddTagsFunc func(ctx context.Context, p *domain.Book, t []domain.Tag) ([]domain.BookTag, error)
+
 	// CreateFunc mocks the Create method.
 	CreateFunc func(ctx context.Context, p *domain.Book) error
+
+	// CreateBatchFunc mocks the CreateBatch method.
+	CreateBatchFunc func(ctx context.Context, p []domain.Book) ([]domain.Book, error)
 
 	// DeleteFunc mocks the Delete method.
 	DeleteFunc func(ctx context.Context, p *domain.Book) error
@@ -63,22 +81,41 @@ type ServiceMock struct {
 	FindFunc func(ctx context.Context, p *domain.Book) (*domain.Book, error)
 
 	// FindAllFunc mocks the FindAll method.
-	FindAllFunc func(ctx context.Context) ([]domain.Book, error)
+	FindAllFunc func(ctx context.Context, queries FindAllQueries) ([]domain.Book, error)
 
 	// IsCategoryExistedFunc mocks the IsCategoryExisted method.
 	IsCategoryExistedFunc func(ctx context.Context, cat *domain.Category) (bool, error)
+
+	// IsTagNameExistedFunc mocks the IsTagNameExisted method.
+	IsTagNameExistedFunc func(ctx context.Context, t string) (bool, error)
 
 	// UpdateFunc mocks the Update method.
 	UpdateFunc func(ctx context.Context, p *domain.Book) (*domain.Book, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// AddTags holds details about calls to the AddTags method.
+		AddTags []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// P is the p argument value.
+			P *domain.Book
+			// T is the t argument value.
+			T []domain.Tag
+		}
 		// Create holds details about calls to the Create method.
 		Create []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// P is the p argument value.
 			P *domain.Book
+		}
+		// CreateBatch holds details about calls to the CreateBatch method.
+		CreateBatch []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// P is the p argument value.
+			P []domain.Book
 		}
 		// Delete holds details about calls to the Delete method.
 		Delete []struct {
@@ -98,6 +135,8 @@ type ServiceMock struct {
 		FindAll []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
+			// Queries is the queries argument value.
+			Queries FindAllQueries
 		}
 		// IsCategoryExisted holds details about calls to the IsCategoryExisted method.
 		IsCategoryExisted []struct {
@@ -105,6 +144,13 @@ type ServiceMock struct {
 			Ctx context.Context
 			// Cat is the cat argument value.
 			Cat *domain.Category
+		}
+		// IsTagNameExisted holds details about calls to the IsTagNameExisted method.
+		IsTagNameExisted []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// T is the t argument value.
+			T string
 		}
 		// Update holds details about calls to the Update method.
 		Update []struct {
@@ -114,6 +160,45 @@ type ServiceMock struct {
 			P *domain.Book
 		}
 	}
+}
+
+// AddTags calls AddTagsFunc.
+func (mock *ServiceMock) AddTags(ctx context.Context, p *domain.Book, t []domain.Tag) ([]domain.BookTag, error) {
+	if mock.AddTagsFunc == nil {
+		panic("ServiceMock.AddTagsFunc: method is nil but Service.AddTags was just called")
+	}
+	callInfo := struct {
+		Ctx context.Context
+		P   *domain.Book
+		T   []domain.Tag
+	}{
+		Ctx: ctx,
+		P:   p,
+		T:   t,
+	}
+	lockServiceMockAddTags.Lock()
+	mock.calls.AddTags = append(mock.calls.AddTags, callInfo)
+	lockServiceMockAddTags.Unlock()
+	return mock.AddTagsFunc(ctx, p, t)
+}
+
+// AddTagsCalls gets all the calls that were made to AddTags.
+// Check the length with:
+//     len(mockedService.AddTagsCalls())
+func (mock *ServiceMock) AddTagsCalls() []struct {
+	Ctx context.Context
+	P   *domain.Book
+	T   []domain.Tag
+} {
+	var calls []struct {
+		Ctx context.Context
+		P   *domain.Book
+		T   []domain.Tag
+	}
+	lockServiceMockAddTags.RLock()
+	calls = mock.calls.AddTags
+	lockServiceMockAddTags.RUnlock()
+	return calls
 }
 
 // Create calls CreateFunc.
@@ -148,6 +233,41 @@ func (mock *ServiceMock) CreateCalls() []struct {
 	lockServiceMockCreate.RLock()
 	calls = mock.calls.Create
 	lockServiceMockCreate.RUnlock()
+	return calls
+}
+
+// CreateBatch calls CreateBatchFunc.
+func (mock *ServiceMock) CreateBatch(ctx context.Context, p []domain.Book) ([]domain.Book, error) {
+	if mock.CreateBatchFunc == nil {
+		panic("ServiceMock.CreateBatchFunc: method is nil but Service.CreateBatch was just called")
+	}
+	callInfo := struct {
+		Ctx context.Context
+		P   []domain.Book
+	}{
+		Ctx: ctx,
+		P:   p,
+	}
+	lockServiceMockCreateBatch.Lock()
+	mock.calls.CreateBatch = append(mock.calls.CreateBatch, callInfo)
+	lockServiceMockCreateBatch.Unlock()
+	return mock.CreateBatchFunc(ctx, p)
+}
+
+// CreateBatchCalls gets all the calls that were made to CreateBatch.
+// Check the length with:
+//     len(mockedService.CreateBatchCalls())
+func (mock *ServiceMock) CreateBatchCalls() []struct {
+	Ctx context.Context
+	P   []domain.Book
+} {
+	var calls []struct {
+		Ctx context.Context
+		P   []domain.Book
+	}
+	lockServiceMockCreateBatch.RLock()
+	calls = mock.calls.CreateBatch
+	lockServiceMockCreateBatch.RUnlock()
 	return calls
 }
 
@@ -222,29 +342,33 @@ func (mock *ServiceMock) FindCalls() []struct {
 }
 
 // FindAll calls FindAllFunc.
-func (mock *ServiceMock) FindAll(ctx context.Context) ([]domain.Book, error) {
+func (mock *ServiceMock) FindAll(ctx context.Context, queries FindAllQueries) ([]domain.Book, error) {
 	if mock.FindAllFunc == nil {
 		panic("ServiceMock.FindAllFunc: method is nil but Service.FindAll was just called")
 	}
 	callInfo := struct {
-		Ctx context.Context
+		Ctx     context.Context
+		Queries FindAllQueries
 	}{
-		Ctx: ctx,
+		Ctx:     ctx,
+		Queries: queries,
 	}
 	lockServiceMockFindAll.Lock()
 	mock.calls.FindAll = append(mock.calls.FindAll, callInfo)
 	lockServiceMockFindAll.Unlock()
-	return mock.FindAllFunc(ctx)
+	return mock.FindAllFunc(ctx, queries)
 }
 
 // FindAllCalls gets all the calls that were made to FindAll.
 // Check the length with:
 //     len(mockedService.FindAllCalls())
 func (mock *ServiceMock) FindAllCalls() []struct {
-	Ctx context.Context
+	Ctx     context.Context
+	Queries FindAllQueries
 } {
 	var calls []struct {
-		Ctx context.Context
+		Ctx     context.Context
+		Queries FindAllQueries
 	}
 	lockServiceMockFindAll.RLock()
 	calls = mock.calls.FindAll
@@ -284,6 +408,41 @@ func (mock *ServiceMock) IsCategoryExistedCalls() []struct {
 	lockServiceMockIsCategoryExisted.RLock()
 	calls = mock.calls.IsCategoryExisted
 	lockServiceMockIsCategoryExisted.RUnlock()
+	return calls
+}
+
+// IsTagNameExisted calls IsTagNameExistedFunc.
+func (mock *ServiceMock) IsTagNameExisted(ctx context.Context, t string) (bool, error) {
+	if mock.IsTagNameExistedFunc == nil {
+		panic("ServiceMock.IsTagNameExistedFunc: method is nil but Service.IsTagNameExisted was just called")
+	}
+	callInfo := struct {
+		Ctx context.Context
+		T   string
+	}{
+		Ctx: ctx,
+		T:   t,
+	}
+	lockServiceMockIsTagNameExisted.Lock()
+	mock.calls.IsTagNameExisted = append(mock.calls.IsTagNameExisted, callInfo)
+	lockServiceMockIsTagNameExisted.Unlock()
+	return mock.IsTagNameExistedFunc(ctx, t)
+}
+
+// IsTagNameExistedCalls gets all the calls that were made to IsTagNameExisted.
+// Check the length with:
+//     len(mockedService.IsTagNameExistedCalls())
+func (mock *ServiceMock) IsTagNameExistedCalls() []struct {
+	Ctx context.Context
+	T   string
+} {
+	var calls []struct {
+		Ctx context.Context
+		T   string
+	}
+	lockServiceMockIsTagNameExisted.RLock()
+	calls = mock.calls.IsTagNameExisted
+	lockServiceMockIsTagNameExisted.RUnlock()
 	return calls
 }
 

@@ -109,6 +109,12 @@ func NewHTTPHandler(endpoints endpoints.Endpoints,
 			encodeResponse,
 			options...,
 		).ServeHTTP)
+		r.Post("/{book_id}/tags", httptransport.NewServer(
+			endpoints.AddTagsToBook,
+			bookDecode.AddTagsToBookRequest,
+			encodeResponse,
+			options...,
+		).ServeHTTP)
 	})
 
 	r.Route("/booklends", func(r chi.Router) {

@@ -3,6 +3,8 @@ package booklend
 import (
 	"PRACTICESTUFF/example-go/domain"
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/jinzhu/gorm"
 )
@@ -17,6 +19,34 @@ func NewPGService(db *gorm.DB) Service {
 	return &pgService{
 		db: db,
 	}
+}
+
+func pgTimeFormat(t time.Time) string {
+	return fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d.%d+00:00",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second(), t.Nanosecond()/1000)
+}
+
+// CreateBatch implement CreateBatch for BookService
+func (s *pgService) CreateBatch(ctx context.Context, p []domain.Booklend) ([]domain.Booklend, error) {
+	sqlValues := ""
+	for i := 0; i < len(p); i++ {
+		p[i].ID = domain.NewUUID()
+		sqlValues += fmt.Sprintf("('%v', '%v', '%v', '%v', '%v')",
+			p[i].ID, p[i].UserID.String(), p[i].BookID.String(), pgTimeFormat(p[i].From), pgTimeFormat(p[i].To))
+		if i == len(p)-1 {
+			sqlValues += ";"
+		} else {
+			sqlValues += ",\n"
+		}
+	}
+	currentTimeValueOnPostgres := pgTimeFormat(time.Now().UTC())
+	returnValues := "SELECT * FROM booklends WHERE booklends.created_at >= " + "'" + currentTimeValueOnPostgres + "';"
+
+	res := []domain.Booklend{}
+	err := s.db.Raw("INSERT INTO booklends (id, user_id, book_id, \"from\", \"to\") VALUES " + sqlValues + returnValues).Scan(&res).Error
+
+	return res, err
 }
 
 // Create implement Create for Booklend service

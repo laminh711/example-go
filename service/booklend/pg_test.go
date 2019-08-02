@@ -1,4 +1,4 @@
-// +build integration
+// +build unit
 
 package booklend
 
@@ -9,6 +9,54 @@ import (
 	"testing"
 	"time"
 )
+
+func TestPGService_CreateBatch(t *testing.T) {
+	t.Parallel()
+	testDB, _, cleanup := testutil.CreateTestDatabase(t)
+	defer cleanup()
+	err := testutil.MigrateTables(testDB)
+	if err != nil {
+		t.Fatalf("failed to migrate tables by error %v", err)
+	}
+
+	type args struct {
+		p []domain.Booklend
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr error
+	}{
+		{
+			name: "pgService create success",
+			args: args{
+				[]domain.Booklend{
+					domain.Booklend{
+						BookID: domain.NewUUID(),
+						UserID: domain.NewUUID(),
+						From:   time.Now().Local(),
+						To:     time.Now().Local().Add(time.Hour * time.Duration(8)),
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := pgService{
+				db: testDB,
+			}
+			_, err := s.CreateBatch(context.Background(), tt.args.p)
+			if err != nil {
+				if err != tt.wantErr {
+					t.Errorf("pgService.Create() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+			}
+		})
+	}
+}
 
 func TestPGService_Create(t *testing.T) {
 	t.Parallel()

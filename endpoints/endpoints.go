@@ -24,11 +24,12 @@ type Endpoints struct {
 	UpdateCategory  endpoint.Endpoint
 	DeleteCategory  endpoint.Endpoint
 
-	CreateBook  endpoint.Endpoint
-	FindBook    endpoint.Endpoint
-	FindAllBook endpoint.Endpoint
-	UpdateBook  endpoint.Endpoint
-	DeleteBook  endpoint.Endpoint
+	CreateBook    endpoint.Endpoint
+	FindBook      endpoint.Endpoint
+	FindAllBook   endpoint.Endpoint
+	UpdateBook    endpoint.Endpoint
+	DeleteBook    endpoint.Endpoint
+	AddTagsToBook endpoint.Endpoint
 
 	CreateBooklend endpoint.Endpoint
 }
@@ -48,11 +49,12 @@ func MakeServerEndpoints(s service.Service) Endpoints {
 		UpdateCategory:  category.MakeUpdateEndpoint(s),
 		DeleteCategory:  category.MakeDeleteEndpoint(s),
 
-		CreateBook:  book.MakeCreateEndpoint(s),
-		FindBook:    book.MakeFindEndpoint(s),
-		FindAllBook: book.MakeFindAllEndpoint(s),
-		UpdateBook:  book.MakeUpdateEndpoint(s),
-		DeleteBook:  book.MakeDeleteEndpoint(s),
+		CreateBook:    book.MakeCreateEndpoint(s),
+		FindBook:      book.MakeFindEndpoint(s),
+		FindAllBook:   book.MakeFindAllEndpoint(s),
+		UpdateBook:    book.MakeUpdateEndpoint(s),
+		DeleteBook:    book.MakeDeleteEndpoint(s),
+		AddTagsToBook: book.MakeAddTagsToBookEndpoint(s),
 
 		CreateBooklend: booklend.MakeCreateEndpoint(s),
 	}
