@@ -19,31 +19,31 @@ func ValidationMiddleware() func(Service) Service {
 	}
 }
 
-func (mw validationMiddleware) CreateBatch(ctx context.Context, book []domain.Book) (err error) {
+func (mw validationMiddleware) CreateBatch(ctx context.Context, book []domain.Book) ([]domain.Book, error) {
 	for _, b := range book {
 		if b.Name == "" {
-			return ErrNameIsRequired
+			return nil, ErrNameIsRequired
 		}
 
 		if len(b.Name) <= 5 {
-			return ErrNameIsTooShort
+			return nil, ErrNameIsTooShort
 		}
 
 		if b.Description == "" {
-			return ErrDescriptionIsRequired
+			return nil, ErrDescriptionIsRequired
 		}
 
 		if len(b.Description) <= 5 {
-			return ErrDescriptionIsTooShort
+			return nil, ErrDescriptionIsTooShort
 		}
 
 		var bCat = domain.Category{Model: domain.Model{ID: b.CategoryID}}
 		catExisted, err := mw.Service.IsCategoryExisted(ctx, &bCat)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if !catExisted {
-			return ErrCategoryNotExisted
+			return nil, ErrCategoryNotExisted
 		}
 	}
 	return mw.Service.CreateBatch(ctx, book)

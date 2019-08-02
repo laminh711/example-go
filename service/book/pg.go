@@ -28,7 +28,7 @@ func pgTimeFormat(t time.Time) string {
 }
 
 // CreateBatch implement CreateBatch for BookService
-func (s *pgService) CreateBatch(ctx context.Context, p []domain.Book) error {
+func (s *pgService) CreateBatch(ctx context.Context, p []domain.Book) ([]domain.Book, error) {
 
 	sqlValues := ""
 	for i := 0; i < len(p); i++ {
@@ -43,11 +43,15 @@ func (s *pgService) CreateBatch(ctx context.Context, p []domain.Book) error {
 	}
 
 	currentTimeValueOnPostgres := pgTimeFormat(time.Now().UTC())
-	returnValues := "SELECT * FROM books WHERE books.created_at <= " + "'" + currentTimeValueOnPostgres + "';"
+	returnValues := "SELECT * FROM books WHERE books.created_at >= " + "'" + currentTimeValueOnPostgres + "';"
 
-	err := s.db.Raw("INSERT INTO books (id, name, author, description, category_id) VALUES " + sqlValues + returnValues).Scan(&p).Error
+	res := []domain.Book{}
+	err := s.db.Raw("INSERT INTO books (id, name, author, description, category_id) VALUES " + sqlValues + returnValues).Scan(&res).Error
+	if err != nil {
+		return nil, err
+	}
 
-	return err
+	return res, err
 }
 
 // Create implement Create for BookService

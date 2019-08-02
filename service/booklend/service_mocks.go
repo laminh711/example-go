@@ -30,7 +30,7 @@ var _ Service = &ServiceMock{}
 //             CreateFunc: func(ctx context.Context, p *domain.Booklend) error {
 // 	               panic("mock out the Create method")
 //             },
-//             CreateBatchFunc: func(ctx context.Context, p []domain.Booklend) error {
+//             CreateBatchFunc: func(ctx context.Context, p []domain.Booklend) ([]domain.Booklend, error) {
 // 	               panic("mock out the CreateBatch method")
 //             },
 //             IsBookExistedFunc: func(ctx context.Context, p *domain.Book) (bool, error) {
@@ -53,7 +53,7 @@ type ServiceMock struct {
 	CreateFunc func(ctx context.Context, p *domain.Booklend) error
 
 	// CreateBatchFunc mocks the CreateBatch method.
-	CreateBatchFunc func(ctx context.Context, p []domain.Booklend) error
+	CreateBatchFunc func(ctx context.Context, p []domain.Booklend) ([]domain.Booklend, error)
 
 	// IsBookExistedFunc mocks the IsBookExisted method.
 	IsBookExistedFunc func(ctx context.Context, p *domain.Book) (bool, error)
@@ -140,7 +140,7 @@ func (mock *ServiceMock) CreateCalls() []struct {
 }
 
 // CreateBatch calls CreateBatchFunc.
-func (mock *ServiceMock) CreateBatch(ctx context.Context, p []domain.Booklend) error {
+func (mock *ServiceMock) CreateBatch(ctx context.Context, p []domain.Booklend) ([]domain.Booklend, error) {
 	if mock.CreateBatchFunc == nil {
 		panic("ServiceMock.CreateBatchFunc: method is nil but Service.CreateBatch was just called")
 	}

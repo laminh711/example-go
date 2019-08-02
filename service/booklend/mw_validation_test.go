@@ -260,8 +260,8 @@ func Test_validationMiddleware_CreateBatch(t *testing.T) {
 	}
 
 	serviceMock := &ServiceMock{
-		CreateBatchFunc: func(ctx context.Context, p []domain.Booklend) error {
-			return nil
+		CreateBatchFunc: func(ctx context.Context, p []domain.Booklend) ([]domain.Booklend, error) {
+			return []domain.Booklend{}, nil
 		},
 		IsBookExistedFunc: func(ctx context.Context, p *domain.Book) (bool, error) {
 			return p.ID == existedBook.ID || p.ID == existedBorrowedBook.ID, nil
@@ -432,7 +432,7 @@ func Test_validationMiddleware_CreateBatch(t *testing.T) {
 			mw := validationMiddleware{
 				Service: serviceMock,
 			}
-			err := mw.CreateBatch(defaultCtx, tt.args.p)
+			_, err := mw.CreateBatch(defaultCtx, tt.args.p)
 			if err != nil {
 				if tt.wantErr == nil {
 					t.Errorf("validationMiddleware.Create() error = %v, wantErr = %v", err, tt.wantErr)

@@ -51,10 +51,6 @@ func MakeCreateEndpoint(s service.Service) endpoint.Endpoint {
 		// 	return nil, err
 		// }
 
-		res := CreateResponse{
-			[]domain.Booklend{},
-		}
-
 		req := request.(CreateRequest)
 
 		inpData := []domain.Booklend{}
@@ -68,13 +64,12 @@ func MakeCreateEndpoint(s service.Service) endpoint.Endpoint {
 			inpData = append(inpData, *booklend)
 		}
 
-		err := s.BooklendService.CreateBatch(ctx, inpData)
+		res, err := s.BooklendService.CreateBatch(ctx, inpData)
 		if err != nil {
 			return nil, err
 		}
-		res.Booklend = inpData
 
-		return res, nil
+		return CreateResponse{Booklend: res}, nil
 
 		// return CreateResponse{Booklend: *booklend}, nil
 	}

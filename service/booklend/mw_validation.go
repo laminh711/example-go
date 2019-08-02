@@ -53,13 +53,13 @@ func (mw validationMiddleware) Create(ctx context.Context, booklend *domain.Book
 	return mw.Service.Create(ctx, booklend)
 }
 
-func (mw validationMiddleware) CreateBatch(ctx context.Context, booklend []domain.Booklend) (err error) {
+func (mw validationMiddleware) CreateBatch(ctx context.Context, booklend []domain.Booklend) ([]domain.Booklend, error) {
 
 	// check booklend themselves
 	for i := 0; i < len(booklend)-1; i++ {
 		for j := i + 1; j < len(booklend); j++ {
 			if booklend[i].BookID == booklend[j].BookID {
-				return ErrDuplicateBook
+				return nil, ErrDuplicateBook
 			}
 		}
 	}
@@ -68,31 +68,31 @@ func (mw validationMiddleware) CreateBatch(ctx context.Context, booklend []domai
 		user := domain.User{Model: domain.Model{ID: bl.UserID}}
 		userExisted, err := mw.Service.IsUserExisted(ctx, &user)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if !userExisted {
-			return ErrUserNotFound
+			return nil, ErrUserNotFound
 		}
 
 		book := domain.Book{Model: domain.Model{ID: bl.BookID}}
 		bookExisted, err := mw.Service.IsBookExisted(ctx, &book)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if !bookExisted {
-			return ErrBookNotFound
+			return nil, ErrBookNotFound
 		}
 
 		bookLendable, err := mw.Service.IsBooklendable(ctx, &bl)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if !bookLendable {
-			return ErrBookNotLendable
+			return nil, ErrBookNotLendable
 		}
 
 		if bl.From.After(bl.To) {
-			return ErrInvalidTimeSpan
+			return nil, ErrInvalidTimeSpan
 		}
 	}
 

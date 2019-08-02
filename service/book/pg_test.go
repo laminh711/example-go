@@ -44,7 +44,7 @@ func TestPGService_CreateBatch(t *testing.T) {
 			s := &pgService{
 				db: testDB,
 			}
-			if err := s.CreateBatch(context.Background(), tt.args.p); (err != nil) != tt.wantErr {
+			if _, err := s.CreateBatch(context.Background(), tt.args.p); (err != nil) != tt.wantErr {
 				t.Errorf("pgService.Create() error = %v, wantErr = %v", err, tt.wantErr)
 			}
 		})

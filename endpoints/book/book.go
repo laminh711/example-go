@@ -55,7 +55,7 @@ func MakeCreateEndpoint(s service.Service) endpoint.Endpoint {
 			inpData = append(inpData, *book)
 		}
 
-		err := s.BookService.CreateBatch(ctx, inpData)
+		sth, err := s.BookService.CreateBatch(ctx, inpData)
 		if err != nil {
 			return nil, err
 		}
@@ -78,7 +78,7 @@ func MakeCreateEndpoint(s service.Service) endpoint.Endpoint {
 		// 	res.Book = append(res.Book, *book)
 		// }
 
-		return res, nil
+		return CreateResponse{Book: sth}, nil
 	}
 }
 

@@ -13,5 +13,5 @@ type Service interface {
 	IsBookExisted(ctx context.Context, p *domain.Book) (bool, error)
 	IsBooklendable(ctx context.Context, p *domain.Booklend) (bool, error)
 
-	CreateBatch(ctx context.Context, p []domain.Booklend) error
+	CreateBatch(ctx context.Context, p []domain.Booklend) ([]domain.Booklend, error)
 }
